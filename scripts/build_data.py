@@ -71,7 +71,13 @@ def read_maps():
         if not world:
             continue
         x0, y0, z0, sx, sz = struct.unpack_from("<5f", r, 0x54)
-        out.append({"id": idv, "world": world, "rect": [x0, z0, sx, sz]})
+        fw, fh = struct.unpack_from("<2i", r, 0x108)
+        # display name: MAPS record title @0x37 (e.g. "Tai.Holy City"); may carry
+        # non-ASCII region glyphs before the ASCII part, so keep printable only.
+        title = "".join(ch for ch in cstr(r[0x37:0x54]) if 32 <= ord(ch) < 127).strip()
+        out.append({"id": idv, "world": world, "title": title,
+                    "rect": [x0, z0, sx, sz],
+                    "box": [fw, fh] if fw > 0 and fh > 0 else None})
     return out
 
 
@@ -167,13 +173,27 @@ def world_to_slug(world, images):
     return None
 
 
+def map_title(titles, slug):
+    """Resolve an image slug to its MAPS.ZU1 display title (exact, then prefix)."""
+    if slug in titles:
+        return titles[slug]
+    for w, t in titles.items():
+        if len(w) >= 10 and (slug.startswith(w) or w.startswith(slug)):
+            return t
+    return None
+
+
 def main():
     cats = load_categories()
     all_maps = read_maps()
+    title_src = {}
+    for m in all_maps:
+        if m["title"] and m["id"] > 0 and len(m["world"]) >= 10 and not m["world"].endswith("_"):
+            title_src.setdefault(m["world"], m["title"])
     rect_src = {}
     for m in all_maps:
         if m["rect"][2] > 0 and m["world"] and m["world"] not in rect_src:
-            rect_src[m["world"]] = {"id": m["id"], "rect": m["rect"]}
+            rect_src[m["world"]] = {"id": m["id"], "rect": m["rect"], "box": m["box"]}
     images = enumerate_image_maps()
     points = read_points()
 
@@ -181,15 +201,20 @@ def main():
     os.makedirs(os.path.join(PUB, "maps"), exist_ok=True)
 
     out_maps = []
+    box_by_slug = {}
     for world in sorted(images):
         src = images[world]
         w, h = jpeg_size(src) or (0, 0)
         with open(src, "rb") as a, open(os.path.join(PUB, "maps", world + ".jpg"), "wb") as b:
             b.write(a.read())
         info = join_rects(rect_src, world)
+        if info and info.get("box"):
+            box_by_slug[world] = info["box"]
+        title = map_title(title_src, world)
         out_maps.append({
             "id": info["id"] if info else None,
-            "world": world, "slug": world, "name": world.upper(),
+            "world": world, "slug": world,
+            "name": title.split(".", 1)[-1] if title else world.upper(),
             "image": f"/maps/{world}.jpg",
             "width": w, "height": h,
             "rect": info["rect"] if info else None,
@@ -220,24 +245,30 @@ def main():
     print(f"assigned by map-id: {by_id}  fallback by rect: {by_rect}  "
           f"unassigned: {len(points) - by_id - by_rect}")
 
-    # world (x,z) -> in-game map pixel.  Fitted from Holy City (LEVEL01_00_WYC)
-    # in-game search samples:  px=(x-rect.minX)/UPPX , py=(z-rect.minZ)/UPPX .
-    # UPPX (world units per map-pixel) is uniform across axes -> undistorted.  Each
-    # map's pixel box is then rect_size/UPPX (differs per map; the image is stretched
-    # to fill it).  A single fixed window for every map is impossible: it contradicts
-    # the sampled coordinates (e.g. Holy City would need scale 38, not 47.5) and clips
-    # big maps (Desert City y>1236, Marsh y>2131).
-    UPPX = 47.5
+    # world (x,z) -> in-game map pixel.  Each map's pixel box is its own MAPS.ZU1
+    # size field (0x108/0x10C = width,height in game pixels) -- NOT the image size;
+    # the minimap image is stretched to fill this box.  So the scale differs per map:
+    #   px = (x-rect.minX) * boxW/rect.sizeX ,  py = (z-rect.minZ) * boxH/rect.sizeZ .
+    # A single global scale misplaces the maps whose rect/box ratio differs from Holy
+    # City's (see the 8-map list the user reported).  Falls back to rect_size/47.5 for
+    # records that carry no size field.
+    FALLBACK_UPPX = 47.5
     transform = {}
     for m in out_maps:
         if not m["rect"]:
             continue
         x0, z0, sx, sz = m["rect"]
-        transform[m["slug"]] = {
-            "a": 1.0 / UPPX, "c": -x0 / UPPX,
-            "e": 1.0 / UPPX, "f": -z0 / UPPX,
-            "w": sx / UPPX, "h": sz / UPPX,
-        }
+        box = box_by_slug.get(m["slug"])
+        if box:
+            bw, bh = box
+            a, e = bw / sx, bh / sz
+        else:
+            a = e = 1.0 / FALLBACK_UPPX
+            bw, bh = sx / FALLBACK_UPPX, sz / FALLBACK_UPPX
+        transform[m["slug"]] = {"a": a, "c": -x0 * a, "e": e, "f": -z0 * e, "w": bw, "h": bh}
+
+    # show maps with a real name first; stable sort keeps slug order within each group
+    out_maps.sort(key=lambda m: m["name"] == m["slug"].upper())
 
     write_json(os.path.join(PUB, "data", "maps.json"), out_maps)
     write_json(os.path.join(PUB, "data", "points.json"), points)

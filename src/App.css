@@ -35,16 +35,25 @@
   background: #0b1120;
   color: inherit;
 }
+.searchwrap {
+  position: relative;
+}
 .results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  max-height: 240px;
+  max-height: 260px;
   overflow-y: auto;
   border: 1px solid #1e293b;
   border-radius: 7px;
   padding: 3px;
   background: #0b1120;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
 }
 .result {
   display: flex;

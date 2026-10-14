@@ -3,7 +3,6 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
   catColor,
-  fromPixel,
   toPixel,
   type MapMeta,
   type Point,
@@ -40,9 +39,9 @@ export default function MapView({ meta, transform, points, visible, onCursor, fo
     });
     L.control.zoom({ position: "bottomright" }).addTo(m);
     markers.current = L.layerGroup().addTo(m);
+    // latlng = [py, px] in CRS.Simple, so lng/lat are the in-game map coords.
     m.on("mousemove", (e: L.LeafletMouseEvent) => {
-      const t = tRef.current;
-      onCursor(t ? fromPixel(t, e.latlng.lng, e.latlng.lat) : null);
+      onCursor(tRef.current ? [e.latlng.lng, e.latlng.lat] : null);
     });
     m.on("mouseout", () => onCursor(null));
     map.current = m;

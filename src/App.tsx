@@ -17,7 +17,6 @@ export default function App() {
     () => new Set(CATEGORIES.map((c) => c.key)),
   );
   const [cursor, setCursor] = useState<[number, number] | null>(null);
-  const [query, setQuery] = useState("");
   const [mquery, setMquery] = useState("");
   const [focus, setFocus] = useState<{ id: number } | null>(null);
 
@@ -43,15 +42,6 @@ export default function App() {
     return c;
   }, [mapPoints]);
 
-  const filteredMaps = useMemo(() => {
-    if (!data) return [];
-    const q = query.trim().toLowerCase();
-    const maps = q
-      ? data.maps.filter((m) => m.slug.includes(q) || m.name.toLowerCase().includes(q))
-      : data.maps;
-    return maps;
-  }, [data, query]);
-
   const results = useMemo(() => {
     if (!data) return [];
     const q = mquery.trim().toLowerCase();
@@ -71,51 +61,44 @@ export default function App() {
     <div className="app">
       <aside className="sidebar">
         <h1>Zu Online — Map</h1>
-        <input
-          className="search"
-          id="map-search"
-          name="map-search"
-          placeholder="Search maps…"
-          aria-label="Search maps"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <input
-          className="search"
-          id="marker-search"
-          name="marker-search"
-          placeholder="Find NPC / monster…"
-          aria-label="Find marker"
-          value={mquery}
-          onChange={(e) => setMquery(e.target.value)}
-        />
-        {results.length > 0 && (
-          <div className="results">
-            {results.map((p) => {
-              const t = data.transform[p.map!];
-              const px = t ? toPixel(t, p.gx, p.gz) : null;
-              return (
-                <button
-                  key={p.id}
-                  className="result"
-                  onClick={() => {
-                    setSlug(p.map!);
-                    setFocus({ id: p.id });
-                    setMquery("");
-                  }}
-                >
-                  <span className="rname">{p.name}</span>
-                  <span className="rmap">
-                    {mapName(p.map!)}
-                    {px ? ` · ${px[0].toFixed(0)},${px[1].toFixed(0)}` : ""}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
+        <div className="searchwrap">
+          <input
+            className="search"
+            id="marker-search"
+            name="marker-search"
+            placeholder="Find NPC / monster…"
+            aria-label="Find marker"
+            value={mquery}
+            onChange={(e) => setMquery(e.target.value)}
+          />
+          {results.length > 0 && (
+            <div className="results">
+              {results.map((p) => {
+                const t = data.transform[p.map!];
+                const px = t ? toPixel(t, p.gx, p.gz) : null;
+                return (
+                  <button
+                    key={p.id}
+                    className="result"
+                    onClick={() => {
+                      setSlug(p.map!);
+                      setFocus({ id: p.id });
+                      setMquery("");
+                    }}
+                  >
+                    <span className="rname">{p.name}</span>
+                    <span className="rmap">
+                      {mapName(p.map!)}
+                      {px ? ` · ${px[0].toFixed(0)},${px[1].toFixed(0)}` : ""}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
         <div className="maplist">
-          {filteredMaps.map((m) => (
+          {data.maps.map((m) => (
             <button
               key={m.slug}
               className={"mapitem" + (m.slug === slug ? " active" : "")}
@@ -158,7 +141,7 @@ export default function App() {
             ))}
           </div>
           <div className="cursor">
-            {cursor ? `x ${cursor[0].toFixed(0)}  z ${cursor[1].toFixed(0)}` : ""}
+            {cursor ? `x ${cursor[0].toFixed(0)}  y ${cursor[1].toFixed(0)}` : ""}
           </div>
         </div>
         <div className="mapwrap">
