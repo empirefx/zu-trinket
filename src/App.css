@@ -35,6 +35,41 @@
   background: #0b1120;
   color: inherit;
 }
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid #1e293b;
+  border-radius: 7px;
+  padding: 3px;
+  background: #0b1120;
+}
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: left;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #e2e8f0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+}
+.result:hover {
+  background: #1b2740;
+}
+.result .rname {
+  font-weight: 600;
+}
+.result .rmap {
+  font-size: 11px;
+  color: #94a3b8;
+}
 .maplist {
   display: flex;
   flex-direction: column;

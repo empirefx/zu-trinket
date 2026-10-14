@@ -4,6 +4,7 @@ import MapView from "./components/MapView";
 import {
   CATEGORIES,
   loadData,
+  toPixel,
   type Data,
   type MapMeta,
 } from "./lib/data";
@@ -17,6 +18,8 @@ export default function App() {
   );
   const [cursor, setCursor] = useState<[number, number] | null>(null);
   const [query, setQuery] = useState("");
+  const [mquery, setMquery] = useState("");
+  const [focus, setFocus] = useState<{ id: number } | null>(null);
 
   useEffect(() => {
     loadData()
@@ -49,10 +52,20 @@ export default function App() {
     return maps;
   }, [data, query]);
 
+  const results = useMemo(() => {
+    if (!data) return [];
+    const q = mquery.trim().toLowerCase();
+    if (q.length < 2) return [];
+    return data.points
+      .filter((p) => p.map && p.name.toLowerCase().includes(q))
+      .slice(0, 60);
+  }, [data, mquery]);
+
   if (err) return <div className="center">Failed to load data: {err}</div>;
   if (!data || !meta) return <div className="center">Loading…</div>;
 
   const hasTransform = !!data.transform[meta.slug];
+  const mapName = (s: string) => data.maps.find((m) => m.slug === s)?.name ?? s;
 
   return (
     <div className="app">
@@ -67,6 +80,40 @@ export default function App() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+        <input
+          className="search"
+          id="marker-search"
+          name="marker-search"
+          placeholder="Find NPC / monster…"
+          aria-label="Find marker"
+          value={mquery}
+          onChange={(e) => setMquery(e.target.value)}
+        />
+        {results.length > 0 && (
+          <div className="results">
+            {results.map((p) => {
+              const t = data.transform[p.map!];
+              const px = t ? toPixel(t, p.gx, p.gz) : null;
+              return (
+                <button
+                  key={p.id}
+                  className="result"
+                  onClick={() => {
+                    setSlug(p.map!);
+                    setFocus({ id: p.id });
+                    setMquery("");
+                  }}
+                >
+                  <span className="rname">{p.name}</span>
+                  <span className="rmap">
+                    {mapName(p.map!)}
+                    {px ? ` · ${px[0].toFixed(0)},${px[1].toFixed(0)}` : ""}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
         <div className="maplist">
           {filteredMaps.map((m) => (
             <button
@@ -122,6 +169,7 @@ export default function App() {
             points={mapPoints}
             visible={visible}
             onCursor={setCursor}
+            focus={focus}
           />
           {!hasTransform && (
             <div className="banner">

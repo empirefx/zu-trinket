@@ -17,9 +17,10 @@ type Props = {
   points: Point[];
   visible: Set<string>;
   onCursor: (xy: [number, number] | null) => void;
+  focus?: { id: number } | null;
 };
 
-export default function MapView({ meta, transform, points, visible, onCursor }: Props) {
+export default function MapView({ meta, transform, points, visible, onCursor, focus }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const overlay = useRef<L.ImageOverlay | null>(null);
@@ -95,6 +96,17 @@ export default function MapView({ meta, transform, points, visible, onCursor }: 
         .addTo(g);
     }
   }, [meta.slug, transform, points, visible]);
+
+  // pan to a search result (runs after the image/bounds effect on map change)
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !focus) return;
+    const t = transform[meta.slug];
+    const p = points.find((x) => x.id === focus.id);
+    if (!t || !p) return;
+    const [px, py] = toPixel(t, p.gx, p.gz);
+    m.setView([py, px], Math.max(m.getZoom(), 1));
+  }, [focus, points, transform, meta.slug]);
 
   return <div ref={el} className="map" />;
 }
