@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import {
   catColor,
   toPixel,
@@ -8,7 +7,7 @@ import {
   type Point,
   type Transform,
   type TransformMap,
-} from "../lib/data";
+} from "../../lib/data";
 
 type Props = {
   meta: MapMeta;
@@ -37,7 +36,7 @@ export default function MapView({ meta, transform, points, visible, onCursor, fo
       attributionControl: false,
       zoomControl: false,
     });
-    L.control.zoom({ position: "bottomright" }).addTo(m);
+    // zoom control removed
     markers.current = L.layerGroup().addTo(m);
     // latlng = [py, px] in CRS.Simple, so lng/lat are the in-game map coords.
     m.on("mousemove", (e: L.LeafletMouseEvent) => {
@@ -107,7 +106,7 @@ export default function MapView({ meta, transform, points, visible, onCursor, fo
     m.setView([py, px], Math.max(m.getZoom(), 1));
   }, [focus, points, transform, meta.slug]);
 
-  return <div ref={el} className="map" />;
+  return <div ref={el} className="absolute inset-0 bg-[#020617]" />;
 }
 
 function escapeHtml(s: string): string {

@@ -58,7 +58,9 @@ export function fromPixel(t: Transform, px: number, py: number): [number, number
   return [(px - t.c) / t.a, (py - t.f) / t.e];
 }
 
-export const CATEGORIES: { key: string; label: string; color: string }[] = [
+export type Category = { key: string; label: string; color: string };
+
+export const CATEGORIES: Category[] = [
   { key: "npc", label: "NPC", color: "#38bdf8" },
   { key: "mob", label: "Monster", color: "#f87171" },
   { key: "object", label: "Object", color: "#94a3b8" },

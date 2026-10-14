@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build Planner</title>
+<style>
+  body { margin: 0; padding: 16px; background: #14161c; color: #ddd; font: 14px Arial, sans-serif; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; justify-content: center; margin-top: 100px; }
+  .box { flex: 1 1 300px; background: #1e222b; border: 1px solid #3a4150; border-radius: 6px; padding: 12px; }
+  h2 { margin: 0 0 10px; font-size: 15px; color: #e8c36a; }
+  input, select { background: #11131a; border: 1px solid #3a4150; color: #eee; padding: 4px 6px; border-radius: 3px; width: 100%; box-sizing: border-box; }
+  .head { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  .head label { font-size: 12px; color: #9aa; }
+  .info { margin-bottom: 10px; color: #9aa; }
+
+  /* gear layout: left column | 3D view | right column */
+  .gear { display: grid; grid-template-columns: 44px 1fr 44px; gap: 8px; }
+  .col { display: flex; flex-direction: column; gap: 8px; }
+  .view { min-height: 340px; background: #11131a; border: 1px solid #3a4150; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #556; text-align: center; }
+  .view.pet { min-height: 200px; }
+  .slot { width: 44px; height: 44px; background: #11131a; border: 1px solid #3a4150; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #667; cursor: pointer; }
+  .slot:hover { border-color: #e8c36a; }
+  .bottom { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+  .spells { display: grid; grid-template-columns: repeat(4, 44px); gap: 8px; justify-content: center; margin-top: 10px; }
+
+  .stat { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-bottom: 1px solid #2a303c; }
+  .stat span { color: #fff; }
+  .gears { max-width: 360px; }
+  .stats { max-width: 250px; }
+  .stats .stat:last-child { border-bottom: 0; }
+  .sub { margin: 10px 0 0; color: #9aa; font-size: 12px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="row">
+
+  <!-- 1. CHARACTER GEAR -->
+  <div class="box gears">
+    <h2>Character Gear</h2>
+    <div class="head">
+      <label>Level <input type="number" min="1" value="139"></label>
+      <label>Title
+        <select>
+          <option>Swift Killer</option>
+          <option>Title 2</option>
+          <option>Title 3</option>
+        </select>
+      </label>
+    </div>
+    <div class="gear">
+      <div class="col">
+        <div class="Precious slot">L1</div><div class="Weapon slot">L2</div><div class="SpiritWeapon slot">L3</div><div class="SpiritArmor slot">L4</div><div class="FortuneGear slot">L5</div><div class="Trinket slot">L6</div>
+      </div>
+      <div class="view">3D character</div>
+      <div class="col">
+        <div class="Headband slot">R1</div><div class="Clothes slot">R2</div><div class="WaistbandDecorator slot">R3</div><div class="Armguards slot">R4</div><div class="Boots slot">R5</div><div class="Pet slot">R6</div>
+      </div>
+    </div>
+    <div class="bottom">
+      <div class="FashionHead slot">B1</div><div class="FashionBody slot">B2</div><div class="FashionWeapon slot">B3</div><div class="FashionWings slot">B4</div>
+    </div>
+  </div>
+
+  <!-- 2. PLAYER STATS -->
+  <div class="box stats">
+    <h2>Player Stats</h2>
+    <div class="stat">Fighting Power <span>14379</span></div>
+    <div class="stat">Health <span>11731/11731</span></div>
+    <div class="stat">Mana <span>5218/11436</span></div>
+    <div class="stat">Damage <span>2807~3125 (+2927)</span></div>
+    <div class="stat">PD <span>1178 (+1168)</span></div>
+    <div class="stat">MD <span>1611 (+1597)</span></div>
+    <div class="stat">Dodge <span>12.50%</span></div>
+    <div class="stat">Parry <span>22.95% (+19.95%)</span></div>
+    <div class="stat">Critical <span>21.65% (+18.65%)</span></div>
+    <div class="stat">Garrote <span>32.84% (+29.84%)</span></div>
+    <div class="stat">Atk speed <span>1185.00 (-47.00)</span></div>
+    <div class="stat">Movement <span>328 (+38)</span></div>
+    <div class="stat">Gear Loss Rate <span>7.03%</span></div>
+  </div>
+
+  <!-- 3. PET GEAR -->
+  <div class="box gears">
+    <h2>Pet Gear</h2>
+    <div class="info">Level: 138</div>
+    <div class="gear">
+      <div class="col">
+        <div class="PetGearEyes slot">L1</div><div class="PetGearInnerBolus slot">L2</div>
+      </div>
+      <div class="view pet">3D pet</div>
+      <div class="col">
+        <div class="PetGearFeetDecoration slot">R1</div><div class="PetGearSaddle slot">R2</div>
+      </div>
+    </div>
+    <div class="sub">Pet Spells</div>
+    <div class="spells">
+      <div class="slot">S1</div><div class="slot">S2</div><div class="slot">S3</div><div class="slot">S4</div>
+      <div class="slot">S5</div><div class="slot">S6</div><div class="slot">S7</div><div class="slot">S8</div>
+    </div>
+  </div>
+
+  <!-- 4. PET STATS -->
+  <div class="box stats">
+    <h2>Pet Stats</h2>
+    <div class="stat">Max HP Bonus <span>+2284</span></div>
+    <div class="stat">Max MP Bonus <span>+2441</span></div>
+    <div class="stat">Attack Bonus <span>+1079</span></div>
+    <div class="stat">PD Bonus <span>+308</span></div>
+    <div class="stat">MD Bonus <span>+411</span></div>
+    <div class="stat">Speed+ <span>+93.00%</span></div>
+    <div class="stat">Satiation <span>487/1000</span></div>
+    <div class="stat">Intimacy <span>840/1000</span></div>
+    <div class="stat">Health <span>6422</span></div>
+    <div class="stat">Life aptitude <span>2300 / 2500</span></div>
+    <div class="stat">Mana aptitude <span>2300 / 2500</span></div>
+    <div class="stat">Attack Apt. <span>2300 / 2500</span></div>
+    <div class="stat">PD aptitude <span>2300 / 2500</span></div>
+    <div class="stat">MD aptitude <span>2300 / 2500</span></div>
+    <div class="stat">Savvy <span>8</span></div>
+  </div>
+
+</div>
+</body>
+</html>

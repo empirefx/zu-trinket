@@ -1,3 +1,5 @@
+@import "@heroui/styles";
+
 :root {
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
   color-scheme: dark;
@@ -12,6 +14,10 @@ body,
   margin: 0;
 }
 body {
-  background: #0b1120;
-  color: #e2e8f0;
+  background: var(--background);
+  color: var(--foreground);
+}
+.leaflet-container {
+  background: #111;
+  z-index: 1;
 }
