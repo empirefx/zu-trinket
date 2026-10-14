@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Spinner } from "@heroui/react";
 import { useData } from "./hooks/useData";
 import { MapPage } from "./pages/MapPage";
-import { GearPage } from "./pages/GearPage";
+import { GearPage } from "./pages/gear/GearPage";
 import { TopTabs } from "./components/ui/TopTabs";
 
 type TabKey = "map" | "gear";

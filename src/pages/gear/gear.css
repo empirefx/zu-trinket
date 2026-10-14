@@ -1,0 +1,183 @@
+/* Gear Page Styles - extracted from skeleton.html */
+
+.gear-page {
+  margin: 0;
+  padding: 16px;
+  background: #14161c;
+  color: #ddd;
+  font: 14px system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+.gear-page .row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+  justify-content: center;
+  margin-top: 170px;
+}
+
+.gear-page .box {
+  flex: 1 1 300px;
+  background: #1e222b;
+  border: 1px solid #3a4150;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.gear-page .box.gears {
+  max-width: 360px;
+}
+
+.gear-page .box.stats {
+  max-width: 250px;
+}
+
+.gear-page h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #e8c36a;
+  font-weight: 600;
+}
+
+.gear-page input,
+.gear-page select {
+  background: #11131a;
+  border: 1px solid #3a4150;
+  color: #eee;
+  padding: 4px 6px;
+  border-radius: 3px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.gear-page .head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.gear-page .head label {
+  font-size: 12px;
+  color: #9aa;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gear-page .info {
+  margin-bottom: 10px;
+  color: #9aa;
+  font-size: 12px;
+}
+
+.gear-page .gear {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  gap: 8px;
+}
+
+.gear-page .col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gear-page .view {
+  min-height: 340px;
+  background: #11131a;
+  border: 1px solid #3a4150;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #556;
+  text-align: center;
+}
+
+.gear-page .view.pet {
+  min-height: 200px;
+}
+
+.gear-page .slot {
+  width: 44px;
+  height: 44px;
+  background: #11131a;
+  border: 1px solid #3a4150;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #667;
+  cursor: pointer;
+}
+
+.gear-page .slot:hover {
+  border-color: #e8c36a;
+}
+
+.gear-page .slot.small {
+  width: 44px;
+  height: 44px;
+  font-size: 9px;
+}
+
+.gear-page .bottom {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.gear-page .spells {
+  display: grid;
+  grid-template-columns: repeat(4, 44px);
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.gear-page .stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid #2a303c;
+}
+
+.gear-page .stat span {
+  color: #fff;
+}
+
+.gear-page .stat:last-child {
+  border-bottom: 0;
+}
+
+.gear-page .sub {
+  margin: 10px 0 0;
+  color: #9aa;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Input number spinner styling */
+.gear-page input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.gear-page input[type="number"]::-webkit-outer-spin-button,
+.gear-page input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Select styling */
+.gear-page select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239aa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  padding-right: 24px;
+}
