@@ -1,0 +1,5 @@
+{
+  "_comment": "Type is taken from each record's 'group' field (1=npc, 2=mob, 3=object) — the game's own search tabs. These patterns only refine group-3 objects into special categories. First match wins.",
+  "treasure": ["treasure"],
+  "pillar": ["pillar", "vajra"]
+}
