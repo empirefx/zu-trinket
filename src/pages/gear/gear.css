@@ -78,6 +78,10 @@
   gap: 8px;
 }
 
+.gear-page .gears .head > :last-child {
+  grid-column: 1 / -1;
+}
+
 .gear-page .col {
   display: flex;
   flex-direction: column;

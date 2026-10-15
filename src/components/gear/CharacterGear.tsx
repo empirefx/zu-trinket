@@ -34,7 +34,7 @@ export function CharacterGear() {
       <div className="head">
         <label>
           Level
-          <input type="number" min="1" max="200" defaultValue={139} />
+          <input type="number" min="1" max="200" defaultValue={200} />
         </label>
         <label>
           Title
@@ -42,6 +42,17 @@ export function CharacterGear() {
             <option>Swift Killer</option>
             <option>Title 2</option>
             <option>Title 3</option>
+          </select>
+        </label>
+        <br />
+        <label>
+          Class
+          <select>
+            <option>Swordsman</option>
+            <option>Sun Warrior</option>
+            <option>Bead Fairy</option>
+            <option>Moonmaiden</option>
+            <option>Summoner</option>
           </select>
         </label>
       </div>
