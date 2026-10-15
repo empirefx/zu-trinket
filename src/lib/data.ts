@@ -64,6 +64,8 @@ export const CATEGORIES: Category[] = [
   { key: "npc", label: "NPC", color: "#38bdf8" },
   { key: "mob", label: "Monster", color: "#f87171" },
   { key: "object", label: "Object", color: "#94a3b8" },
+  { key: "stone", label: "Stone", color: "rgb(232, 195, 106)" },
+  { key: "herb", label: "Herb", color: "#86efac" },
 ];
 
 export function catColor(cat: string): string {

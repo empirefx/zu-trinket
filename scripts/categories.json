@@ -1,3 +1,6 @@
 {
-  "_comment": "Type is taken from each record's 'group' field (1=npc, 2=mob, 3=object) — the game's own search tabs. These patterns only refine group-3 objects into special categories. First match wins."
+  "_comment": "Type is taken from each record's 'group' field (1=npc, 2=mob, 3=object) — the game's own search tabs. These patterns only refine group-3 objects into special categories. First match wins.",
+  "ore": ["quarry", "mine", "ore", "mineral", "vein", "deposit"],
+  "herb": ["herb", "grass", "flower", "plant", "berry", "mushroom", "fungus", "root", "seed", "sprout", "shoot", "leaf", "bloom", "blossom", "petal", "pollen", "nectar", "sap", "resin", "bark", "branch", "twig", "vine", "ivy", "moss", "lichen", "algae", "seaweed", "kelp"],
+  "stone": ["quarry", "stone", "rock", "boulder", "pebble", "gravel", "sand", "clay", "mud", "dirt", "earth", "soil", "dust", "ash", "cinder", "coal", "charcoal", "obsidian", "granite", "marble", "limestone", "sandstone", "slate", "quartz", "crystal", "gem", "gemstone", "diamond", "ruby", "sapphire", "emerald", "topaz", "amethyst", "opal", "pearl", "amber", "coral", "ivory", "bone", "fossil", "shell"]
 }
