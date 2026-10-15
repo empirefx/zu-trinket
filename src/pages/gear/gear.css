@@ -33,6 +33,12 @@
   max-width: 250px;
 }
 
+.gear-page .box.dimmed {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: grayscale(0.6);
+}
+
 .gear-page h2 {
   margin: 0 0 10px;
   font-size: 15px;
@@ -120,6 +126,11 @@
 
 .gear-page .slot:hover {
   border-color: #e8c36a;
+}
+
+.gear-page .slot.active {
+  border-color: #e8c36a;
+  color: #e8c36a;
 }
 
 .gear-page .slot.small {

@@ -9,10 +9,10 @@ const PET_RIGHT_SLOTS = ["PetGearFeetDecoration", "PetGearSaddle"];
 const PET_SPELLS = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"];
 
 export function PetGear() {
-  const { level } = useBuild();
+  const { level, hasPet } = useBuild();
 
   return (
-    <Box title="Pet Gear" maxWidth="360px" className="gears">
+    <Box title="Pet Gear" maxWidth="360px" className="gears" dimmed={!hasPet}>
       <div className="info">Level: {level}</div>
 
       <div className="gear">

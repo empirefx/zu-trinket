@@ -1,10 +1,18 @@
 import { useMemo } from "react";
 import { useBuild } from "./BuildContext";
 
+const LABELS = [
+  "Max HP Bonus", "Max MP Bonus", "Attack Bonus", "PD Bonus", "MD Bonus",
+  "Speed+", "Satiation", "Intimacy", "Health", "Life Aptitude",
+  "Mana Aptitude", "Attack Apt.", "PD Aptitude", "MD Aptitude", "Savvy",
+];
+
 export function usePetStats() {
-  const { level } = useBuild();
+  const { level, hasPet } = useBuild();
 
   const stats = useMemo(() => {
+    if (!hasPet) return LABELS.map((label) => ({ label, value: "—" }));
+
     // Pet stats scale with player level
     const hpBonus = Math.floor(2284 * (level / 139));
     const mpBonus = Math.floor(2441 * (level / 139));
@@ -33,7 +41,7 @@ export function usePetStats() {
       { label: "MD Aptitude", value: "2,300 / 2,500" },
       { label: "Savvy", value: "8" },
     ];
-  }, [level]);
+  }, [level, hasPet]);
 
   return stats;
 }

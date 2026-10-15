@@ -20,7 +20,6 @@ const RIGHT_SLOTS = [
   "WaistbandDecorator",
   "Armguards",
   "Boots",
-  "Pet",
 ];
 
 const BOTTOM_SLOTS = [
@@ -41,7 +40,7 @@ const CLASSES = [
 const TITLES_OPTIONS = [{ name: "None", effect: "" }, ...TITLES];
 
 export function CharacterGear() {
-  const { classId, level, title, setClassId, setLevel, setTitle } = useBuild();
+  const { classId, level, title, hasPet, setClassId, setLevel, setTitle, togglePet } = useBuild();
 
   return (
     <Box title="Character Gear" maxWidth="360px" className="gears">
@@ -50,10 +49,10 @@ export function CharacterGear() {
           Level
           <input
             type="number"
-            min="1"
+            min="0"
             max="200"
             value={level}
-            onChange={(e) => setLevel(Math.max(1, Math.min(200, parseInt(e.target.value) || 1)))}
+            onChange={(e) => setLevel(Math.max(0, Math.min(200, parseInt(e.target.value) || 0)))}
           />
         </label>
         <label>
@@ -78,7 +77,9 @@ export function CharacterGear() {
       <div className="gear">
         <GearColumn slots={LEFT_SLOTS} />
         <GearViewer label="3D character" minHeight={340} />
-        <GearColumn slots={RIGHT_SLOTS} />
+        <GearColumn slots={RIGHT_SLOTS}>
+          <GearSlot label="Pet" active={hasPet} onClick={togglePet} />
+        </GearColumn>
       </div>
 
       <div className="bottom">

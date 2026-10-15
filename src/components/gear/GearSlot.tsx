@@ -3,12 +3,13 @@ interface GearSlotProps {
   className?: string;
   onClick?: () => void;
   size?: "normal" | "small";
+  active?: boolean;
 }
 
-export function GearSlot({ label, className = "", onClick, size = "normal" }: GearSlotProps) {
+export function GearSlot({ label, className = "", onClick, size = "normal", active }: GearSlotProps) {
   return (
     <div
-      className={`slot ${size === "small" ? "small" : ""} ${className}`}
+      className={`slot ${size === "small" ? "small" : ""} ${active ? "active" : ""} ${className}`}
       onClick={onClick}
       title={label}
     >

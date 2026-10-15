@@ -29,22 +29,23 @@ export function usePlayerStats() {
     const base = CLASS_BASE[classId] || CLASS_BASE.swordsman;
     const growth = CLASS_GROWTH[classId] || CLASS_GROWTH.swordsman;
     const mod = TITLES.find((t) => t.name === title);
+    const lv = Math.max(1, level);
 
     const atkMult = 1 + (mod?.attack ?? 0) / 100;
     const defMult = 1 + (mod?.defense ?? 0) / 100;
     const moveMult = 1 + (mod?.move ?? 0) / 100;
 
-    let hp = calc(base.hp, growth.hp, level);
+    let hp = calc(base.hp, growth.hp, lv);
     if (mod) hp = mod.hpPct ? Math.floor(hp * (1 + mod.hp / 100)) : hp + mod.hp;
 
-    const mp = calc(base.mp, growth.mp, level);
-    const patk = calc(base.patk, growth.patk, level) * atkMult;
-    const pdef = calc(base.pdef, growth.pdef, level) * defMult;
-    const mdef = calc(base.mdef, growth.mdef, level) * defMult;
-    const dodge = Math.min(50, parseFloat((base.dodge + growth.dodge * (level - 1) + (mod?.dodge ?? 0)).toFixed(2)));
-    const parry = Math.min(50, parseFloat((base.parry + growth.parry * (level - 1)).toFixed(2)));
-    const crit = Math.min(50, parseFloat((base.crit + growth.crit * (level - 1)).toFixed(2)));
-    const move = Math.floor((300 + level * 0.2) * moveMult);
+    const mp = calc(base.mp, growth.mp, lv);
+    const patk = calc(base.patk, growth.patk, lv) * atkMult;
+    const pdef = calc(base.pdef, growth.pdef, lv) * defMult;
+    const mdef = calc(base.mdef, growth.mdef, lv) * defMult;
+    const dodge = Math.min(50, parseFloat((base.dodge + growth.dodge * (lv - 1) + (mod?.dodge ?? 0)).toFixed(2)));
+    const parry = Math.min(50, parseFloat((base.parry + growth.parry * (lv - 1)).toFixed(2)));
+    const crit = Math.min(50, parseFloat((base.crit + growth.crit * (lv - 1)).toFixed(2)));
+    const move = Math.floor((300 + lv * 0.2) * moveMult);
     const lossRate = Math.max(0, 7.03 * (1 - (mod?.drop ?? 0) / 100));
 
     return [
