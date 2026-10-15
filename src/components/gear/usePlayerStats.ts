@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useBuild } from "./BuildContext";
+import { TITLES } from "./titles";
 
 const CLASS_BASE: Record<string, { hp: number; mp: number; patk: number; pdef: number; mdef: number; hit: number; dodge: number; parry: number; crit: number; aspd: number }> = {
   swordsman: { hp: 520, mp: 160, patk: 52, pdef: 28, mdef: 16, hit: 96, dodge: 4, parry: 5, crit: 2, aspd: 100 },
@@ -22,37 +23,46 @@ function calc(base: number, growth: number, level: number) {
 }
 
 export function usePlayerStats() {
-  const { classId, level } = useBuild();
+  const { classId, level, title } = useBuild();
 
   const stats = useMemo(() => {
     const base = CLASS_BASE[classId] || CLASS_BASE.swordsman;
     const growth = CLASS_GROWTH[classId] || CLASS_GROWTH.swordsman;
+    const mod = TITLES.find((t) => t.name === title);
 
-    const hp = calc(base.hp, growth.hp, level);
+    const atkMult = 1 + (mod?.attack ?? 0) / 100;
+    const defMult = 1 + (mod?.defense ?? 0) / 100;
+    const moveMult = 1 + (mod?.move ?? 0) / 100;
+
+    let hp = calc(base.hp, growth.hp, level);
+    if (mod) hp = mod.hpPct ? Math.floor(hp * (1 + mod.hp / 100)) : hp + mod.hp;
+
     const mp = calc(base.mp, growth.mp, level);
-    const patk = calc(base.patk, growth.patk, level);
-    const pdef = calc(base.pdef, growth.pdef, level);
-    const mdef = calc(base.mdef, growth.mdef, level);
-    const dodge = Math.min(50, parseFloat((base.dodge + growth.dodge * (level - 1)).toFixed(2)));
+    const patk = calc(base.patk, growth.patk, level) * atkMult;
+    const pdef = calc(base.pdef, growth.pdef, level) * defMult;
+    const mdef = calc(base.mdef, growth.mdef, level) * defMult;
+    const dodge = Math.min(50, parseFloat((base.dodge + growth.dodge * (level - 1) + (mod?.dodge ?? 0)).toFixed(2)));
     const parry = Math.min(50, parseFloat((base.parry + growth.parry * (level - 1)).toFixed(2)));
     const crit = Math.min(50, parseFloat((base.crit + growth.crit * (level - 1)).toFixed(2)));
+    const move = Math.floor((300 + level * 0.2) * moveMult);
+    const lossRate = Math.max(0, 7.03 * (1 - (mod?.drop ?? 0) / 100));
 
     return [
       { label: "Fighting Power", value: Math.floor((hp + mp + patk * 10 + pdef * 5 + mdef * 5) / 100).toLocaleString() },
       { label: "Health", value: `${hp.toLocaleString()} / ${hp.toLocaleString()}` },
       { label: "Mana", value: `${mp.toLocaleString()} / ${mp.toLocaleString()}` },
       { label: "Damage", value: `${Math.floor(patk * 0.8)}~${Math.floor(patk * 1.2)} (+${Math.floor(patk * 0.5)})` },
-      { label: "PD", value: `${pdef.toLocaleString()} (+${Math.floor(pdef * 0.99)})` },
-      { label: "MD", value: `${mdef.toLocaleString()} (+${Math.floor(mdef * 0.99)})` },
+      { label: "PD", value: `${Math.floor(pdef).toLocaleString()} (+${Math.floor(pdef * 0.99)})` },
+      { label: "MD", value: `${Math.floor(mdef).toLocaleString()} (+${Math.floor(mdef * 0.99)})` },
       { label: "Dodge", value: `${dodge.toFixed(2)}%` },
       { label: "Parry", value: `${parry.toFixed(2)}% (+${(parry * 0.87).toFixed(2)}%)` },
       { label: "Critical", value: `${crit.toFixed(2)}% (+${(crit * 0.86).toFixed(2)}%)` },
       { label: "Garrote", value: `${(crit * 1.5).toFixed(2)}% (+${(crit * 1.37).toFixed(2)}%)` },
       { label: "Atk Speed", value: `${base.aspd}.00 (+0.00)` },
-      { label: "Movement", value: `${Math.floor(300 + level * 0.2)} (+${Math.floor(level * 0.2)})` },
-      { label: "Gear Loss Rate", value: "7.03%" },
+      { label: "Movement", value: `${move} (+${Math.max(0, move - 300)})` },
+      { label: "Gear Loss Rate", value: `${lossRate.toFixed(2)}%` },
     ];
-  }, [classId, level]);
+  }, [classId, level, title]);
 
   return stats;
 }

@@ -3,6 +3,7 @@ import { GearColumn } from "./GearColumn";
 import { GearViewer } from "./GearViewer";
 import { GearSlot } from "./GearSlot";
 import { useBuild } from "./BuildContext";
+import { TITLES } from "./titles";
 
 const LEFT_SLOTS = [
   "Precious",
@@ -37,7 +38,7 @@ const CLASSES = [
   { id: "summoner", name: "Summoner" },
 ];
 
-const TITLES = ["Swift Killer", "Title 2", "Title 3"];
+const TITLES_OPTIONS = [{ name: "None", effect: "" }, ...TITLES];
 
 export function CharacterGear() {
   const { classId, level, title, setClassId, setLevel, setTitle } = useBuild();
@@ -58,7 +59,11 @@ export function CharacterGear() {
         <label>
           Title
           <select value={title} onChange={(e) => setTitle(e.target.value)}>
-            {TITLES.map((t) => <option key={t} value={t}>{t}</option>)}
+            {TITLES_OPTIONS.map((t) => (
+              <option key={t.name} value={t.name} title={t.effect}>
+                {t.name}
+              </option>
+            ))}
           </select>
         </label>
         <br />
