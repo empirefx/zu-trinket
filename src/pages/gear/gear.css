@@ -196,3 +196,264 @@
   background-position: right 6px center;
   padding-right: 24px;
 }
+
+
+/* --- gear picker (modal) + drawer --- */
+.gear-page .overlay,
+.gear-page .drawer-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(8, 10, 14, 0.55);
+  display: flex;
+}
+
+.gear-page .overlay {
+  align-items: center;
+  justify-content: center;
+}
+
+.gear-page .modal {
+  width: min(88%, 520px);
+  max-height: 78vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(30, 34, 43, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid #3a4150;
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.gear-page .modal-head {
+  padding: 12px 14px;
+  border-bottom: 1px solid #3a4150;
+  color: #e8c36a;
+  font-weight: 600;
+}
+
+.gear-page .modal-list {
+  overflow: auto;
+  font-size: 13px;
+}
+
+.gear-page .picker-note {
+  padding: 18px 14px;
+  color: #8b93a3;
+  text-align: center;
+}
+
+.gear-page .group {
+  padding: 6px 14px;
+  background: #171a21;
+  color: #8b93a3;
+  font-size: 12px;
+  position: sticky;
+  top: 0;
+}
+
+.gear-page .item-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  border-bottom: 1px solid #23262e;
+  color: #dfe3ea;
+  cursor: pointer;
+}
+
+.gear-page .item-row:hover {
+  background: rgba(232, 195, 106, 0.08);
+  color: #e8c36a;
+}
+
+.gear-page .item-row .lv {
+  color: #8b93a3;
+  white-space: nowrap;
+}
+
+.gear-page .drawer-wrap {
+  justify-content: flex-end;
+}
+
+.gear-page .drawer {
+  width: min(92%, 620px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: rgba(30, 34, 43, 0.92);
+  backdrop-filter: blur(8px);
+  border-left: 1px solid #3a4150;
+}
+
+.gear-page .drawer-head {
+  padding: 11px 14px;
+  border-bottom: 1px solid #3a4150;
+  color: #e8c36a;
+  font-weight: 600;
+}
+
+.gear-page .drawer-sub,
+.gear-page .modal-sub {
+  color: #8b93a3;
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.gear-page .drawer-body {
+  flex: 1;
+  overflow: auto;
+  padding: 12px 14px;
+  color: #dfe3ea;
+  font-size: 13px;
+}
+
+.gear-page .sec {
+  margin: 0 0 6px;
+  color: #8b93a3;
+}
+
+.gear-page .sec:not(:first-child) {
+  margin-top: 14px;
+}
+
+.gear-page .sec-val {
+  color: #e8c36a;
+}
+
+.gear-page .statgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 16px;
+}
+
+.gear-page .statgrid > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.gear-page .statgrid .k {
+  color: #8b93a3;
+}
+
+.gear-page .attrlist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}
+
+.gear-page .attrlist .attr {
+  padding: 2px 7px;
+  border: 1px solid #3a4150;
+  border-radius: 4px;
+  background: #11131a;
+  color: #cbd2de;
+}
+
+.gear-page .attrlist .attr-note {
+  color: #6a7183;
+}
+
+.gear-page .sec-hint {
+  color: #5a6172;
+  font-weight: 400;
+}
+
+.gear-page .attrlist .attr {
+  cursor: pointer;
+}
+
+.gear-page .attrlist .attr.on {
+  border-color: #e8c36a;
+  color: #e8c36a;
+}
+
+.gear-page .attrrows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gear-page .attr-row {
+  display: flex;
+  gap: 8px;
+  color: #5a6172;
+  cursor: pointer;
+}
+
+.gear-page .attr-row .mark {
+  flex: none;
+}
+
+.gear-page .attr-row.on {
+  color: #e8c36a;
+}
+
+.gear-page .attr-row.on .attr-desc {
+  color: #dfe3ea;
+}
+
+.gear-page .rate {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.gear-page .rate.rank {
+  font-size: 11px;
+  gap: 2px;
+}
+
+.gear-page .rate.rank span {
+  padding: 1px 3px;
+}
+
+.gear-page .rate-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+  color: #5a6172;
+  font-size: 11px;
+}
+
+.gear-page .drawer-foot {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid #3a4150;
+}
+
+.gear-page .btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid #3a4150;
+  color: #dfe3ea;
+  border-radius: 6px;
+  padding: 9px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.gear-page .btn:hover {
+  border-color: #e8c36a;
+}
+
+.gear-page .btn.primary {
+  background: #e8c36a;
+  border-color: #e8c36a;
+  color: #1e222b;
+  font-weight: 600;
+}
+
+.gear-page .slot.filled {
+  color: #e8c36a;
+  font-size: 9px;
+  padding: 3px;
+  word-break: break-word;
+}

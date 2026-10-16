@@ -4,16 +4,17 @@ interface GearSlotProps {
   onClick?: () => void;
   size?: "normal" | "small";
   active?: boolean;
+  value?: string;
 }
 
-export function GearSlot({ label, className = "", onClick, size = "normal", active }: GearSlotProps) {
+export function GearSlot({ label, className = "", onClick, size = "normal", active, value }: GearSlotProps) {
   return (
     <div
-      className={`slot ${size === "small" ? "small" : ""} ${active ? "active" : ""} ${className}`}
+      className={`slot ${size === "small" ? "small" : ""} ${active ? "active" : ""} ${value ? "filled" : ""} ${className}`}
       onClick={onClick}
-      title={label}
+      title={value ? `${label}: ${value}` : label}
     >
-      {label}
+      {value ?? label}
     </div>
   );
 }

@@ -1,9 +1,14 @@
+import { useState } from "react";
 import { Box } from "./Box";
 import { GearColumn } from "./GearColumn";
 import { GearViewer } from "./GearViewer";
 import { GearSlot } from "./GearSlot";
+import { GearPicker } from "./GearPicker";
+import { GearDrawer } from "./GearDrawer";
+import { CLASS_NAMES, SLOT_ITEMS } from "./gearSlots";
 import { useBuild } from "./BuildContext";
 import { TITLES } from "./titles";
+import type { Item } from "../../lib/items";
 
 const LEFT_SLOTS = [
   "Precious",
@@ -29,18 +34,17 @@ const BOTTOM_SLOTS = [
   "FashionWings",
 ];
 
-const CLASSES = [
-  { id: "swordsman", name: "Swordsman" },
-  { id: "sunwarrior", name: "Sun Warrior" },
-  { id: "beadfairy", name: "Bead Fairy" },
-  { id: "moonmaiden", name: "Moonmaiden" },
-  { id: "summoner", name: "Summoner" },
-];
-
 const TITLES_OPTIONS = [{ name: "None", effect: "" }, ...TITLES];
 
 export function CharacterGear() {
-  const { classId, level, title, hasPet, setClassId, setLevel, setTitle, togglePet } = useBuild();
+  const { classId, level, title, hasPet, gear, setClassId, setLevel, setTitle, togglePet, setGear } = useBuild();
+  const [picking, setPicking] = useState<string | null>(null);
+  const [pending, setPending] = useState<{ slot: string; item: Item } | null>(null);
+
+  const values = Object.fromEntries(Object.entries(gear).map(([s, e]) => [s, e.item.name]));
+  const openSlot = (slot: string) => {
+    if (SLOT_ITEMS[slot]) setPicking(slot);
+  };
 
   return (
     <Box title="Character Gear" maxWidth="360px" className="gears">
@@ -69,24 +73,48 @@ export function CharacterGear() {
         <label>
           Class
           <select value={classId} onChange={(e) => setClassId(e.target.value as any)}>
-            {CLASSES.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {Object.entries(CLASS_NAMES).map(([id, name]) => (
+              <option key={id} value={id}>{name}</option>
+            ))}
           </select>
         </label>
       </div>
 
       <div className="gear">
-        <GearColumn slots={LEFT_SLOTS} />
+        <GearColumn slots={LEFT_SLOTS} values={values} onSlotClick={openSlot} />
         <GearViewer label="3D character" minHeight={340} />
-        <GearColumn slots={RIGHT_SLOTS}>
+        <GearColumn slots={RIGHT_SLOTS} values={values} onSlotClick={openSlot}>
           <GearSlot label="Pet" active={hasPet} onClick={togglePet} />
         </GearColumn>
       </div>
 
       <div className="bottom">
-        {BOTTOM_SLOTS.map((s, i) => (
-          <GearSlot key={i} label={s} />
+        {BOTTOM_SLOTS.map((s) => (
+          <GearSlot key={s} label={s} />
         ))}
       </div>
+
+      {picking && (
+        <GearPicker
+          appSlot={picking}
+          onClose={() => setPicking(null)}
+          onPick={(item) => {
+            setPending({ slot: picking, item });
+            setPicking(null);
+          }}
+        />
+      )}
+      {pending && (
+        <GearDrawer
+          item={pending.item}
+          appSlot={pending.slot}
+          onCancel={() => setPending(null)}
+          onAdd={(entry) => {
+            setGear(pending.slot, entry);
+            setPending(null);
+          }}
+        />
+      )}
     </Box>
   );
 }

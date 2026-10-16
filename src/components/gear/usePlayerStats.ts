@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import { useBuild } from "./BuildContext";
+import { gearTotals } from "./gearSlots";
+import { useStar } from "../../hooks/useItems";
 import { TITLES } from "./titles";
 import { CLASS_CURVES } from "./classData";
 
@@ -13,7 +15,8 @@ function bonus(n: number) {
 }
 
 export function usePlayerStats() {
-  const { classId, level, title } = useBuild();
+  const { classId, level, title, gear } = useBuild();
+  const star = useStar();
 
   return useMemo(() => {
     const curve = CLASS_CURVES[classId] ?? CLASS_CURVES.summoner;
@@ -24,18 +27,28 @@ export function usePlayerStats() {
     const defMult = 1 + (mod?.defense ?? 0) / 100;
     const moveMult = 1 + (mod?.move ?? 0) / 100;
 
+    // race-base values, before title % and before gear
     const baseHp = curve.hp[lv];
+    const baseMin = curve.minAtk[lv];
+    const baseMax = curve.maxAtk[lv];
+    const basePd = curve.pd[lv];
+    const baseMd = curve.md[lv];
+
+    const g = gearTotals(gear, star ?? {});
+
     let hp = baseHp;
     if (mod) hp = mod.hpPct ? Math.floor(baseHp * (1 + mod.hp / 100)) : baseHp + mod.hp;
 
     const mp = curve.mp[lv];
-    const minAtk = Math.floor(curve.minAtk[lv] * atkMult);
-    const maxAtk = Math.floor(curve.maxAtk[lv] * atkMult);
-    const dmgBonus = Math.floor(curve.minAtk[lv] * (atkMult - 1));
+    const minAtk = Math.floor((baseMin + g.atkMin) * atkMult);
+    const maxAtk = Math.floor((baseMax + g.atkMax) * atkMult);
+    const pd = Math.floor((basePd + g.phys) * defMult);
+    const md = Math.floor((baseMd + g.mag) * defMult);
 
-    const pd = Math.floor(curve.pd[lv] * defMult);
-    const md = Math.floor(curve.md[lv] * defMult);
-    const defBonus = Math.floor(curve.pd[lv] * (defMult - 1));
+    // HUD_PROPERTY.LUA: Damage bonus = avg of the min/max deltas vs race base.
+    const dmgBonus = Math.floor((minAtk - baseMin + (maxAtk - baseMax)) / 2);
+    const pdBonus = pd - basePd;
+    const mdBonus = md - baseMd;
 
     const dodge = Math.min(50, +(curve.dodge + (mod?.dodge ?? 0)).toFixed(2));
     const move = Math.floor(curve.move * moveMult);
@@ -43,8 +56,9 @@ export function usePlayerStats() {
 
     // Fighting Power. Engine-side (SC_GetCharTotalPower); weights fitted to four
     // live level-0 characters (Sun Warrior 68, Swordsman 59, Bead Fairy 59,
-    // Summoner 67) - all four match. ponytail: approximation, refine when more
-    // level-0 samples (esp. Moonmaiden) are available.
+    // Summoner 67) - all four match. ponytail: approximation; it has no
+    // attack/defence term, so equipped gear does not move it (no geared samples
+    // to refit against).
     const power = Math.round(0.26 * hp + 0.093 * mp + 0.92 * dodge + 6.5);
 
     return [
@@ -52,8 +66,8 @@ export function usePlayerStats() {
       { label: "Health", value: `${hp} / ${hp}` },
       { label: "Mana", value: `${mp} / ${mp}` },
       { label: "Damage", value: `${minAtk}~${maxAtk}${bonus(dmgBonus)}` },
-      { label: "PD", value: `${pd}${bonus(defBonus)}` },
-      { label: "MD", value: `${md}${bonus(defBonus)}` },
+      { label: "PD", value: `${pd}${bonus(pdBonus)}` },
+      { label: "MD", value: `${md}${bonus(mdBonus)}` },
       { label: "Dodge", value: `${dodge.toFixed(2)}%` },
       { label: "Parry", value: `${PARRY.toFixed(2)}%` },
       { label: "Critical", value: `${CRIT.toFixed(2)}%` },
@@ -62,5 +76,5 @@ export function usePlayerStats() {
       { label: "Movement", value: `${move}${bonus(move - curve.move)}` },
       { label: "Gear Loss Rate", value: `${lossRate.toFixed(2)}%` },
     ];
-  }, [classId, level, title]);
+  }, [classId, level, title, gear, star]);
 }

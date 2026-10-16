@@ -1,0 +1,78 @@
+export type ItemGrade = "common" | "superior" | "legendary" | "amber";
+
+// One row per rank (upgrade stage) of an item: [atkMin, atkMax, phys, mag].
+// rank 0 is the base record; the picker collapses all stages into one Item and
+// keeps this table so the drawer can show/apply the chosen rank's stats.
+export type RankStats = [number | null, number | null, number | null, number | null];
+
+export type Item = {
+  id: number;
+  name: string;
+  class: string;
+  tier: number;
+  slot: string;
+  grade: ItemGrade;
+  atkMin: number | null;
+  atkMax: number | null;
+  phys: number | null;
+  mag: number | null;
+  icon: string;
+  setId: number;
+  starGroup: number;
+  ranks: RankStats[];
+};
+
+// A set definition (suits: 2 per level; epics: 1 per level). bonuses maps piece
+// count ("2".."8") -> the in-game bonus text for wearing that many pieces.
+export type GearSet = {
+  name: string;
+  class: string;
+  tier: number;
+  series: string;
+  kind: string;
+  bonuses: Record<string, string>;
+};
+
+// One config per equipped item. enhance/rank are the 0-30 strips in the drawer.
+// attrs/elements are the toggled-on potential attributes / five elements - a
+// reference choice only (values aren't stored, so nothing sums them yet).
+export type EquipEntry = {
+  item: Item;
+  enhance: number;
+  rank: number;
+  attrs?: string[];
+  elements?: string[];
+};
+
+// Enhance curve per STAR group: cumulative bonus % for level 0..N (from STAR.bin).
+export type StarCurves = Record<string, number[]>;
+
+// items.json is 4.9 MB and only the picker needs it, so fetch it once on
+// demand and keep the promise - repeated opens cost nothing.
+let cache: Promise<Item[]> | null = null;
+
+export function loadItems(): Promise<Item[]> {
+  if (!cache) cache = fetch("/data/items.json").then((r) => r.json() as Promise<Item[]>);
+  return cache;
+}
+
+let starCache: Promise<StarCurves> | null = null;
+
+export function loadStar(): Promise<StarCurves> {
+  if (!starCache) starCache = fetch("/data/star.json").then((r) => r.json() as Promise<StarCurves>);
+  return starCache;
+}
+
+let setCache: Promise<Record<string, GearSet>> | null = null;
+
+export function loadSets(): Promise<Record<string, GearSet>> {
+  if (!setCache) setCache = fetch("/data/sets.json").then((r) => r.json() as Promise<Record<string, GearSet>>);
+  return setCache;
+}
+
+// Cumulative enhance bonus % for a group at a level (extra levels clamp to max).
+export function enhancePct(star: StarCurves, group: number, level: number): number {
+  const curve = star[String(group)];
+  if (!curve || level <= 0) return 0;
+  return curve[Math.min(level, curve.length - 1)] ?? 0;
+}

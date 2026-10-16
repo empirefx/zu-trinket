@@ -1,0 +1,152 @@
+import type { EquipEntry, Item, StarCurves } from "../../lib/items";
+import { enhancePct } from "../../lib/items";
+
+const normName = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+// The shipped name field is cut at a fixed byte and a few hundred records have a
+// same-length chunk overwritten with a garbage token whose tail merges into the
+// next word ("Heav-TaSoldier" for "Heaven Soldier", "KestmBoots", "BooWushan").
+// Every such name leaves a lowercase letter jammed against an uppercase one and
+// no intact name does, so that pattern is the mangled marker.
+const MANGLED = /[a-z][A-Z]/;
+
+export const looksMangled = (name: string): boolean => MANGLED.test(name);
+
+// items.json stores every upgrade stage of an item as its own record (same
+// class/slot/tier/grade/name, rising stats, chained via +580) and the shipped
+// names are cut at a fixed byte, so a raw list is full of repeats. Keep one per
+// item: collapse identical names to the base record (lowest id - verified to be
+// the first stage), then drop a name that is a prefix of exactly one longer
+// name in the same class/slot/grade/tier (the truncated copy of it). Anything
+// else - including corrupt rows whose names share no prefix - is left alone
+// rather than guessed at. ponytail: a stricter merge hides real items (two
+// suits share base stats and near names), so this stops at the unambiguous case.
+export function uniqueItems(items: Item[]): Item[] {
+  const best = new Map<string, Item>();
+  for (const i of items) {
+    if (MANGLED.test(i.name)) continue; // drop the mangled copy of a name
+    const k = `${i.class}|${i.slot}|${i.grade}|${i.tier}|${i.name}`;
+    const prev = best.get(k);
+    if (!prev || i.id < prev.id) best.set(k, i);
+  }
+  const groups = new Map<string, Item[]>();
+  for (const i of best.values()) {
+    const k = `${i.class}|${i.slot}|${i.grade}|${i.tier}`;
+    const a = groups.get(k);
+    if (a) a.push(i);
+    else groups.set(k, [i]);
+  }
+  const out: Item[] = [];
+  for (const arr of groups.values()) {
+    const names = arr.map((i) => normName(i.name));
+    arr.forEach((i, idx) => {
+      const ni = names[idx];
+      if (ni.length < 8) return out.push(i);
+      const prefixed = names.filter((n) => n.startsWith(ni));
+      const longer = prefixed.filter((n) => n.length > ni.length);
+      if (prefixed.length !== 2 || longer.length !== 1) out.push(i);
+    });
+  }
+  return out;
+}
+
+// Display names for the 5 classes; key order drives the Class select order.
+export const CLASS_NAMES: Record<string, string> = {
+  swordsman: "Swordsman",
+  sunwarrior: "Sun Warrior",
+  beadfairy: "Bead Fairy",
+  moonmaiden: "Moonmaiden",
+  summoner: "Summoner",
+};
+
+// App gear slot label -> `slot` keys found in items.json that fit it.
+// Slots missing from this map (FortuneGear, Pet, Fashion*) take no items.
+// ponytail: spiritbreath -> SpiritWeapon and destinyartifact -> Precious are the
+// only fits - items.json has no "spirit weapon" wording. One map, tweak it here.
+export const SLOT_ITEMS: Record<string, string[]> = {
+  Precious: ["destinyartifact"],
+  Weapon: ["weapon"],
+  SpiritWeapon: ["spiritbreath"],
+  SpiritArmor: ["spiritarmor"],
+  Trinket: ["pendant"],
+  Headband: ["helmet"],
+  Clothes: ["clothes", "vestment"],
+  WaistbandDecorator: ["waistband"],
+  Armguards: ["bracers"],
+  Boots: ["boots"],
+};
+
+// App slot -> REFINE.ZU1 slot id (ITEMS +340). Only these slots roll potential
+// attributes; slots not listed here (and Precious/FortuneGear/Fashion*) do not.
+export const SLOT_REFINE: Record<string, number> = {
+  Weapon: 5,
+  Headband: 2,
+  Clothes: 3,
+  Armguards: 4,
+  Boots: 6,
+  SpiritArmor: 19,
+  SpiritWeapon: 21,
+  WaistbandDecorator: 20,
+  Trinket: 20,
+};
+
+// Set name shown in the "Attributes (...)" heading, keyed by REFINE slot id.
+// From the 2008 guide's set list, matched to REFINE_ATTRS' per-slot members.
+export const REFINE_SET: Record<number, string> = {
+  2: "Head Gear set",
+  3: "Vest Armour set",
+  4: "Bracers/Bracelet set",
+  5: "Weapon set",
+  6: "Boots set",
+  19: "Spirit Armour set",
+  20: "Waistband set",
+  21: "Spirit Breath set",
+};
+
+// What each potential attribute does, verbatim from the in-game tooltip (the
+// numbers shown are one example roll - the game rolls a value per item).
+export const ATTR_DESC: Record<string, string> = {
+  Power: "Increases Garrote Chance and Critical Strike Chance by 1.7%",
+  Rip: "8% chance for additional damage equal to 8% of weapon Attack Point",
+  Berserk: "Increases Attack Point by 15, but receive damage equal to 15% of weapon AP",
+  Slow: "6% chance to reduce enemy Movement Speed and Attack Speed",
+  Stun: "5% chance to incapacitate the enemy for 2 sec",
+  Corruption: "4% chance to reduce enemy HP by 10%/sec for 5 sec",
+  Critical: "Increases critical Strike Chance by 5.5%.",
+  Garrote: "Increases Garrote Chance by 6.2%.",
+  Slice: "Improves attack speed",
+  Resilience: "Reflects 2% of damage taken to the attacker.",
+  Resistance: "Improves parry",
+  Dodge: "Improves avoidance",
+  Regeneration: "Improves health recovery",
+  Rejuvenation: "Accelerates mana restoration by 200%.",
+  Restoration: "Increases movement by 145 when you are in the spirit status.",
+  Protection: "Reduces damage from lasting effects",
+  Luck: "Increases parry chance, garrote chance and critical strike chance by 2%; reduces gear loss chance when meeting demise by 1%",
+  Swiftness: "Improves movement speed",
+};
+
+// Sum of what every equipped item contributes to the player's sheet.
+// star = the STAR.bin curves; without them enhance is ignored (multiplier 1).
+export function gearTotals(gear: Record<string, EquipEntry>, star: StarCurves = {}) {
+  const t = { atkMin: 0, atkMax: 0, phys: 0, mag: 0 };
+  for (const e of Object.values(gear)) {
+    const m = 1 + enhancePct(star, e.item.starGroup, e.enhance) / 100;
+    const rk = e.item.ranks[Math.min(e.rank, e.item.ranks.length - 1)];
+    const [a, b, p, g] = rk ?? [e.item.atkMin, e.item.atkMax, e.item.phys, e.item.mag];
+    t.atkMin += (a ?? 0) * m;
+    t.atkMax += (b ?? 0) * m;
+    t.phys += (p ?? 0) * m;
+    t.mag += (g ?? 0) * m;
+  }
+  return t;
+}
+
+export function pretty(slot: string): string {
+  return slot
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/([a-zA-Z])(\d)/g, "$1 $2")
+    .split(/[ _-]/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
