@@ -1,4 +1,5 @@
 import "./gear.css";
+import "./slots-sprite.css";
 import { CharacterGear } from "../../components/gear/CharacterGear";
 import { PlayerStats } from "../../components/gear/PlayerStats";
 import { PetGear } from "../../components/gear/PetGear";

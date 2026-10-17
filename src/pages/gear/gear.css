@@ -113,7 +113,7 @@
 .gear-page .slot {
   width: 44px;
   height: 44px;
-  background: #11131a;
+  background-color: #11131a;
   border: 1px solid #3a4150;
   border-radius: 3px;
   display: flex;
