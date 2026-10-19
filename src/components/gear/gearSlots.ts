@@ -103,28 +103,11 @@ export const REFINE_SET: Record<number, string> = {
   21: "Spirit Breath set",
 };
 
-// What each potential attribute does, verbatim from the in-game tooltip (the
-// numbers shown are one example roll - the game rolls a value per item).
-export const ATTR_DESC: Record<string, string> = {
-  Power: "Increases Garrote Chance and Critical Strike Chance by 1.7%",
-  Rip: "8% chance for additional damage equal to 8% of weapon Attack Point",
-  Berserk: "Increases Attack Point by 15, but receive damage equal to 15% of weapon AP",
-  Slow: "6% chance to reduce enemy Movement Speed and Attack Speed",
-  Stun: "5% chance to incapacitate the enemy for 2 sec",
-  Corruption: "4% chance to reduce enemy HP by 10%/sec for 5 sec",
-  Critical: "Increases critical Strike Chance by 5.5%.",
-  Garrote: "Increases Garrote Chance by 6.2%.",
-  Slice: "Improves attack speed",
-  Resilience: "Reflects 2% of damage taken to the attacker.",
-  Resistance: "Improves parry",
-  Dodge: "Improves avoidance",
-  Regeneration: "Improves health recovery",
-  Rejuvenation: "Accelerates mana restoration by 200%.",
-  Restoration: "Increases movement by 145 when you are in the spirit status.",
-  Protection: "Reduces damage from lasting effects",
-  Luck: "Increases parry chance, garrote chance and critical strike chance by 2%; reduces gear loss chance when meeting demise by 1%",
-  Swiftness: "Improves movement speed",
-};
+// What each potential attribute does comes from the game itself: ITEMATT.ZU1
+// holds the tooltip text (attrs.json, loaded by useAttrs). The REFINE table
+// uses the old guide wording ("Rip", "Stun", "Slice", "Protection") while
+// ITEMATT carries the in-game wording ("Accuracy", "Incapacitate",
+// "Attack Speed Increased", "Defensive Spirit Breath").
 
 // Sum of what every equipped item contributes to the player's sheet.
 // star = the STAR.bin curves; without them enhance is ignored (multiplier 1).

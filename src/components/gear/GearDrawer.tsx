@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { pretty, SLOT_REFINE, REFINE_SET, ATTR_DESC } from "./gearSlots";
+import { pretty, SLOT_REFINE, REFINE_SET } from "./gearSlots";
 import { REFINE_ATTRS } from "./refineData";
+import { ATTR_INFO } from "./attrData";
 import { useBuild } from "./BuildContext";
 import { useStar, useSets } from "../../hooks/useItems";
 import type { EquipEntry, Item } from "../../lib/items";
@@ -17,14 +18,11 @@ const glyphColor = (i: number) => (i < 10 ? "#e8c36a" : i < 20 ? "#9ecbff" : "#f
 const num = (v: number | null) => (v === null ? "—" : String(v));
 const range = (a: number | null, b: number | null) => `${num(a)} ~ ${num(b)}`;
 
-// Stat granted by each five-element stone (2008 guide wording).
-const ELEMENTS: [string, string][] = [
-  ["Gold", "+Atk"],
-  ["Wood", "+HP"],
-  ["Water", "+MDef"],
-  ["Fire", "+Shift"],
-  ["Earth", "+PDef"],
-];
+// The five elements. Their effect text comes from ITEMATT.ZU1 (attrData.ts):
+// Gold = "Metal" there, "Increases Attack Power"; Wood = "Increases max
+// health"; Water = "Increases Magic Defense"; Fire = "Increases the effect
+// duration of shapeshifting"; Earth = "Increases Physical Defense".
+const ELEMENTS = ["Gold", "Wood", "Water", "Fire", "Earth"];
 
 interface GearDrawerProps {
   item: Item;
@@ -49,7 +47,12 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
   const rk = item.ranks[Math.min(rank, maxRank)] ?? [item.atkMin, item.atkMax, item.phys, item.mag];
   const [rAtkMin, rAtkMax, rPhys, rMag] = rk;
   const hasAttack = !!(rAtkMin || rAtkMax);
-  const base: [string, string][] = [["Required Level", String(item.tier)]];
+  const base: [string, string][] = [
+    ["Gear level", String(item.tier)],
+    // Only the craftable grades have their level requirement written down
+    // (SPELLSEX); for the rest the game does not say.
+    ["Required Level", item.reqLevel ? String(item.reqLevel) : "—"],
+  ];
   if (hasAttack) base.push(["Attack", range(rAtkMin, rAtkMax)]);
   else {
     base.push(["Phys Def", num(rPhys)]);
@@ -104,6 +107,12 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
             ))}
           </div>
 
+          {item.src && item.src !== "ITEMS" && (
+            <div className="picker-note">
+              Not in the live client item table (ITEMS) — this record comes from {item.src}.
+            </div>
+          )}
+
           <div className="sec">
             Enhance <span className="sec-val">{shownEnh}{shownPct > 0 && ` · +${shownPct}%`}</span>
           </div>
@@ -143,15 +152,26 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
             Five elements <span className="sec-hint">(click to toggle)</span>
           </div>
           <div className="attrlist">
-            {ELEMENTS.map(([name, stat]) => (
-              <span
-                key={name}
-                className={"attr" + (onElem.has(name) ? " on" : "")}
-                onClick={() => toggle(onElem, setOnElem, name)}
-              >
-                {name} <span className="attr-note">{stat}</span>
-              </span>
-            ))}
+            {ELEMENTS.map((name) => {
+              const info = ATTR_INFO[name];
+              return (
+                <div
+                  key={name}
+                  className={"attr" + (onElem.has(name) ? " on" : "")}
+                  onClick={() => toggle(onElem, setOnElem, name)}
+                >
+                  <span className="mark">{onElem.has(name) ? "✓" : "□"}</span>
+                  <span>
+                    <b>{name}</b>
+                    {info && info.name !== name ? (
+                      <span className="attr-note"> ({info.name})</span>
+                    ) : null}
+                    {" — "}
+                    <span className="attr-desc">{info?.desc ?? ""}</span>
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
           {attrs.length > 0 && (
@@ -160,18 +180,23 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
                 Attributes <span className="sec-hint">({REFINE_SET[refineSlot] ?? "set"})</span>
               </div>
               <div className="attrrows">
-                {attrs.map((a) => (
-                  <div
-                    key={a}
-                    className={"attr-row" + (on.has(a) ? " on" : "")}
-                    onClick={() => toggle(on, setOn, a)}
-                  >
-                    <span className="mark">{on.has(a) ? "✓" : "□"}</span>
-                    <span>
-                      <b>{a}</b> — <span className="attr-desc">{ATTR_DESC[a] ?? ""}</span>
-                    </span>
-                  </div>
-                ))}
+                {attrs.map((a) => {
+                  const info = ATTR_INFO[a];
+                  return (
+                    <div
+                      key={a}
+                      className={"attr-row" + (on.has(a) ? " on" : "")}
+                      onClick={() => toggle(on, setOn, a)}
+                    >
+                      <span className="mark">{on.has(a) ? "✓" : "□"}</span>
+                      <span>
+                        <b>{a}</b>
+                        {info && info.name !== a ? <span className="attr-note"> ({info.name})</span> : null}
+                        {" — "}
+                        <span className="attr-desc">{info?.desc ?? ""}</span>                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </>
           )}

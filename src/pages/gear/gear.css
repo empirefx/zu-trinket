@@ -338,16 +338,31 @@
 
 .gear-page .attrlist {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 6px;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .gear-page .attrlist .attr {
-  padding: 2px 7px;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 3px 7px;
   border: 1px solid #3a4150;
   border-radius: 4px;
   background: #11131a;
   color: #cbd2de;
+}
+
+.gear-page .attrlist .attr .mark {
+  flex: none;
+}
+
+.gear-page .attrlist .attr .attr-desc {
+  color: #5a6172;
+}
+
+.gear-page .attrlist .attr.on .attr-desc {
+  color: #dfe3ea;
 }
 
 .gear-page .attrlist .attr-note {

@@ -20,7 +20,19 @@ export type Item = {
   setId: number;
   starGroup: number;
   ranks: RankStats[];
+  // Character level the gear needs. Only the craftable grades (superior /
+  // legendary) have one written down - SPELLSEX "Creates ... (Requires
+  // Level N)" - so 0 means "not stated in the data".
+  reqLevel: number;
+  // Which item table the record came from. "ITEMS" is the table the shipped
+  // client loads; "ITEMS2"/"ITEMS3" are an older/other generation.
+  src: string;
 };
+
+// A potential attribute, joined from REFINE.ZU1 (the guide wording, e.g.
+// "Rip") and ITEMATT.ZU1 (the in-game wording + tooltip, e.g. "Accuracy").
+// The generated table lives in src/components/gear/attrData.ts.
+export type { AttrInfo } from "../components/gear/attrData";
 
 // A set definition (suits: 2 per level; epics: 1 per level). bonuses maps piece
 // count ("2".."8") -> the in-game bonus text for wearing that many pieces.
