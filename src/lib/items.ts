@@ -20,6 +20,10 @@ export type Item = {
   setId: number;
   starGroup: number;
   ranks: RankStats[];
+  // The five element values (Metal, Wood, Water, Fire, Earth) per rank stage -
+  // from the item record (ITEMS +376). null = the slot was overwritten by a
+  // stray word in the shipped data.
+  elems: (number | null)[][];
   // Character level the gear needs. Only the craftable grades (superior /
   // legendary) have one written down - SPELLSEX "Creates ... (Requires
   // Level N)" - so 0 means "not stated in the data".

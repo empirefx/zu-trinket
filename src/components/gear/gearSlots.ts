@@ -1,5 +1,6 @@
 import type { EquipEntry, Item, StarCurves } from "../../lib/items";
 import { enhancePct } from "../../lib/items";
+import { ELEMENT_BIT, ELEMENT_SETS, ELEMENT_WHEEL } from "./elementWheel";
 
 const normName = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
@@ -108,6 +109,36 @@ export const REFINE_SET: Record<number, string> = {
 // uses the old guide wording ("Rip", "Stun", "Slice", "Protection") while
 // ITEMATT carries the in-game wording ("Accuracy", "Incapacitate",
 // "Attack Speed Increased", "Defensive Spirit Breath").
+
+// The numbers the game prints for one element, for a given active element set
+// (a bitmask), the item's enhance factor and the element's own value (from the
+// item record, ITEMS +376).
+//
+//   value = base * multiplier(active set) * enhance factor
+//   swing = base / 2                            (the +-50 % the tooltip shows)
+//
+// The multiplier is the game's own table (ITEMFIVEATTRIBUTE.ZU1); the base is
+// the item's authored element value.
+export function elementNumbers(
+  name: string,
+  base: number | undefined,
+  activeMask: number,
+  enhance: number = 1,
+): { mult: number | undefined; value: number | undefined; swings: string[] } {
+  const mult = ELEMENT_SETS[String(activeMask)]?.[name];
+  const value =
+    base !== undefined && mult !== undefined
+      ? Math.floor(base * mult * enhance)
+      : undefined;
+  const swings: string[] = [];
+  const w = ELEMENT_WHEEL[name];
+  if (base !== undefined && w) {
+    const half = Math.floor(base / 2);
+    if (activeMask & ELEMENT_BIT[w.pos]) swings.push(`<${w.pos}+${half}>`);
+    if (activeMask & ELEMENT_BIT[w.neg]) swings.push(`<${w.neg}-${half}>`);
+  }
+  return { mult, value, swings };
+}
 
 // Sum of what every equipped item contributes to the player's sheet.
 // star = the STAR.bin curves; without them enhance is ignored (multiplier 1).

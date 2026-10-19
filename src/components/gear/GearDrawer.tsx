@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { pretty, SLOT_REFINE, REFINE_SET } from "./gearSlots";
+import { pretty, SLOT_REFINE, REFINE_SET, elementNumbers } from "./gearSlots";
 import { REFINE_ATTRS } from "./refineData";
 import { ATTR_INFO } from "./attrData";
+import { ELEMENT_BIT, ELEMENT_WHEEL } from "./elementWheel";
 import { useBuild } from "./BuildContext";
 import { useStar, useSets } from "../../hooks/useItems";
+import { enhancePct } from "../../lib/items";
 import type { EquipEntry, Item } from "../../lib/items";
 
 // Enhance is driven by STAR.bin (item.starGroup -> cumulative bonus % curve), so
@@ -18,11 +20,21 @@ const glyphColor = (i: number) => (i < 10 ? "#e8c36a" : i < 20 ? "#9ecbff" : "#f
 const num = (v: number | null) => (v === null ? "—" : String(v));
 const range = (a: number | null, b: number | null) => `${num(a)} ~ ${num(b)}`;
 
-// The five elements. Their effect text comes from ITEMATT.ZU1 (attrData.ts):
-// Gold = "Metal" there, "Increases Attack Power"; Wood = "Increases max
-// health"; Water = "Increases Magic Defense"; Fire = "Increases the effect
-// duration of shapeshifting"; Earth = "Increases Physical Defense".
-const ELEMENTS = ["Gold", "Wood", "Water", "Fire", "Earth"];
+// "3 suns" = enhance level 21..30 (the strip is 10 stars, 10 moons, 10 suns)
+const shownEnhLabel = (lvl: number) =>
+  lvl <= 10 ? `${lvl} stars` : lvl <= 20 ? `${lvl - 10} moons` : `${lvl - 20} suns`;
+
+// The five elements, as the game names them (ITEMATT.ZU1 / ITEMFIVEATTRIBUTE.ZU1):
+// Metal = "Increases Attack Power", Wood = "Increases max health", Water =
+// "Increases Magic Defense", Fire = "Increases the effect duration of
+// shapeshifting", Earth = "Increases Physical Defense".  The bit is the one the
+// game uses for the element set (ITEMFIVEATTRIBUTE row id).
+const ELEMENTS: [string, number][] = [
+  ["Metal", 1], ["Wood", 2], ["Water", 4], ["Fire", 8], ["Earth", 16],
+];
+// The guide and the REFINE table call the first element "Gold"; ATTR_INFO is
+// keyed by that name.
+const ATTR_KEY: Record<string, string> = { Metal: "Gold" };
 
 interface GearDrawerProps {
   item: Item;
@@ -35,6 +47,8 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
   const [enhRaw, setEnh] = useState(0);
   const [rank, setRank] = useState(0);
   const [on, setOn] = useState<Set<string>>(new Set());
+  // which elements are activated on the item: that is the player's choice
+  // (element stones), it is NOT in the tables - the values are.
   const [onElem, setOnElem] = useState<Set<string>>(new Set());
   const [hover, setHover] = useState<{ n: number; v: number } | null>(null);
   const star = useStar();
@@ -42,6 +56,13 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
   const { gear } = useBuild();
   const curve = star?.[String(item.starGroup)];
   const maxEnh = curve ? curve.length - 1 : 30;
+  const enh = Math.min(enhRaw, maxEnh);
+
+  // The multiplier the game applies for the currently active element set
+  // (ITEMFIVEATTRIBUTE.ZU1: one row per set, keyed by the element bitmask)
+  // and the item's enhance factor (STAR.bin, the same one the stats use).
+  const activeMask = ELEMENTS.reduce((m, [k, bit]) => m | (onElem.has(k) ? bit : 0), 0);
+  const enhFactor = 1 + enhancePct(star ?? {}, item.starGroup, enh) / 100;
 
   const maxRank = Math.max(item.ranks.length - 1, 0);
   const rk = item.ranks[Math.min(rank, maxRank)] ?? [item.atkMin, item.atkMax, item.phys, item.mag];
@@ -57,6 +78,17 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
   else {
     base.push(["Phys Def", num(rPhys)]);
     base.push(["Mag Def", num(rMag)]);
+  }
+  // the enhance curve (STAR.bin) scales the stats, same as the element values
+  const enhPctNow = enhancePct(star ?? {}, item.starGroup, enh);
+  if (enhPctNow > 0) {
+    const scale = (v: number | null) => (v === null ? "—" : String(Math.floor(v * enhFactor)));
+    base.push([
+      `At ${shownEnhLabel(enh)} enhance`,
+      hasAttack
+        ? `${scale(rAtkMin)} ~ ${scale(rAtkMax)}`
+        : `${scale(rPhys)} / ${scale(rMag)}`,
+    ]);
   }
   const refineSlot = SLOT_REFINE[appSlot] ?? 0;
   const attrs = REFINE_ATTRS[String(refineSlot)] ?? [];
@@ -81,7 +113,6 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
     set(next);
   };
 
-  const enh = Math.min(enhRaw, maxEnh);
   const shownEnh = hover?.n === 1 ? hover.v : enh;
   const shownPct = curve && shownEnh > 0 ? curve[Math.min(shownEnh, curve.length - 1)] : 0;
   const shownRank = hover?.n === 2 ? hover.v : rank;
@@ -151,28 +182,48 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
           <div className="sec">
             Five elements <span className="sec-hint">(click to toggle)</span>
           </div>
-          <div className="attrlist">
-            {ELEMENTS.map((name) => {
-              const info = ATTR_INFO[name];
+          <div className="attrlist elem-lines">
+            {ELEMENTS.map(([name], idx) => {
+              const info = ATTR_INFO[ATTR_KEY[name] ?? name];
+              const w = ELEMENT_WHEEL[name];
+              const active = onElem.has(name);
+              const base = item.elems?.[Math.min(rank, item.elems.length - 1)]?.[idx] ?? undefined;
+              const { value, swings } = elementNumbers(name, base, activeMask, enhFactor);
+              const pos = !!w && !!(activeMask & ELEMENT_BIT[w.pos]);
+              const neg = !!w && !!(activeMask & ELEMENT_BIT[w.neg]);
+              const tag = !active
+                ? `[${name}]`
+                : pos && neg
+                  ? `[${name}+/-]`
+                  : pos
+                    ? `[${name}+]`
+                    : neg
+                      ? `[${name}-]`
+                      : `[${name}]`;
               return (
                 <div
                   key={name}
-                  className={"attr" + (onElem.has(name) ? " on" : "")}
+                  className={"attr" + (active ? " on" : "")}
                   onClick={() => toggle(onElem, setOnElem, name)}
                 >
-                  <span className="mark">{onElem.has(name) ? "✓" : "□"}</span>
-                  <span>
-                    <b>{name}</b>
-                    {info && info.name !== name ? (
-                      <span className="attr-note"> ({info.name})</span>
-                    ) : null}
-                    {" — "}
+                  <span className="mark">{active ? "✓" : "□"}</span>
+                  <span className="elem-line">
+                    ({active ? "activated" : "desactivated"}) {tag}
                     <span className="attr-desc">{info?.desc ?? ""}</span>
+                    {active && value !== undefined ? value : ""}
+                    {active ? swings.join("") : ""}
                   </span>
                 </div>
               );
             })}
           </div>
+          {activeMask > 0 && (
+            <div className="picker-note">
+              Active set {activeMask} ({ELEMENTS.filter(([k]) => onElem.has(k)).map(([k]) => k).join(" + ")}) — the values
+              are the item's own (ITEMS +376) times the game's multiplier for that set
+              {enh > 0 ? ` and the enhance factor ×${enhFactor.toFixed(3)}` : ""}.
+            </div>
+          )}
 
           {attrs.length > 0 && (
             <>

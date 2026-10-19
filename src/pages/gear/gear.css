@@ -357,8 +357,60 @@
   flex: none;
 }
 
+/* the five elements are printed like the game's own tooltip lines:
+   "(activated) [Metal+/-]Increases Attack Power34<Earth+17><Fire-17>" */
+.gear-page .elem-lines .attr {
+  align-items: baseline;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 12px;
+}
+
+.gear-page .elem-lines .attr .elem-line {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gear-page .elem-lines .attr .attr-desc {
+  color: #cbd2de;
+}
+
+.gear-page .elem-lines .attr.on .attr-desc {
+  color: #e8c36a;
+}
+
 .gear-page .attrlist .attr .attr-desc {
   color: #5a6172;
+}
+
+/* the numbers row: multiplier badge, base input, computed value */
+.gear-page .attrlist .attr .attr-main {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.gear-page .attrlist .attr .attr-nums {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.gear-page .attrlist .attr .attr-mult {
+  padding: 0 5px;
+  border: 1px solid #3a4150;
+  border-radius: 3px;
+  color: #8a93a6;
+  font-variant-numeric: tabular-nums;
+}
+
+.gear-page .attrlist .attr .attr-mult.hot {
+  border-color: #e8c36a;
+  color: #e8c36a;
 }
 
 .gear-page .attrlist .attr.on .attr-desc {
