@@ -243,7 +243,6 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
                         <b>{a}</b>
                         {info && info.name !== a ? <span className="attr-note"> ({info.name})</span> : null}
                         {" — "}
-                        <span className="attr-desc">{info?.desc ?? ""}</span>                      </span>
                         <span className="attr-desc">{info?.desc ?? ""}</span>
                       </span>
                     </div>
