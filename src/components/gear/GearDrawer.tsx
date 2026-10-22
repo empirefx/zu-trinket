@@ -6,6 +6,7 @@ import { ELEMENT_BIT, ELEMENT_WHEEL } from "./elementWheel";
 import { useBuild } from "./BuildContext";
 import { useStar, useSets } from "../../hooks/useItems";
 import { enhancePct } from "../../lib/items";
+import { iconClass } from "../../lib/icons";
 import type { EquipEntry, Item } from "../../lib/items";
 
 // Enhance is driven by STAR.bin (item.starGroup -> cumulative bonus % curve), so
@@ -124,15 +125,19 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
   const shownEnh = hover?.n === 1 ? hover.v : enh;
   const shownPct = curve && shownEnh > 0 ? curve[Math.min(shownEnh, curve.length - 1)] : 0;
   const shownRank = hover?.n === 2 ? hover.v : rank;
+  const icon = iconClass(item.icon);
 
   return (
     <div className="drawer-wrap" onClick={onCancel}>
       <div className="drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-head">
-          {item.name}{" "}
-          <span className="drawer-sub">
-            Lvl {item.tier} · {pretty(appSlot)}
-          </span>
+          <div className="drawer-title">
+            {item.name}{" "}
+            <span className="drawer-sub">
+              Lvl {item.tier} · {pretty(appSlot)}
+            </span>
+          </div>
+          {icon ? <span className={"gear-icon zs " + icon} /> : null}
         </div>
 
         <div className="drawer-body">

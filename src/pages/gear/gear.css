@@ -271,6 +271,21 @@
   white-space: nowrap;
 }
 
+.gear-page .item-row .item-name {
+  flex: 1;
+}
+
+/* the gear icon (the class sprite sheet) next to a name */
+.gear-page .gear-icon {
+  display: inline-block;
+  flex: none;
+  width: calc(var(--zs, 1) * 32px);
+  height: calc(var(--zs, 1) * 32px);
+  background-color: #11131a;
+  border: 1px solid #3a4150;
+  border-radius: 3px;
+}
+
 .gear-page .drawer-wrap {
   justify-content: flex-end;
 }
@@ -290,6 +305,13 @@
   border-bottom: 1px solid #3a4150;
   color: #e8c36a;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gear-page .drawer-title {
+  flex: 1;
 }
 
 .gear-page .drawer-sub,
@@ -521,4 +543,10 @@
   font-size: 9px;
   padding: 3px;
   word-break: break-word;
+}
+
+/* the equipped item's icon inside a gear slot - the slot already has a frame */
+.gear-page .slot .gear-icon {
+  border: none;
+  background-color: transparent;
 }

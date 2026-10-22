@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useBuild } from "./BuildContext";
 import { useItems } from "../../hooks/useItems";
 import { pretty, CLASS_NAMES, SLOT_ITEMS, uniqueItems } from "./gearSlots";
+import { iconClass } from "../../lib/icons";
 import type { Item } from "../../lib/items";
 
 // The two gear grades the app lists (the item description spells them out:
@@ -67,16 +68,20 @@ export function GearPicker({ appSlot, onClose, onPick }: GearPickerProps) {
               <div className="group">
                 {GRADE_LABEL[g.grade]} · {g.rows.length}
               </div>
-              {g.rows.map((i) => (
+              {g.rows.map((i) => {
+                const icon = iconClass(i.icon);
+                return (
                 <div key={i.id} className="item-row" onClick={() => onPick(i)}>
-                  <span>
+                  {icon ? <span className={"gear-icon zs " + icon} /> : null}
+                  <span className="item-name">
                     {i.name}
                     {i.reqLevel ? <span className="lv"> req {i.reqLevel}</span> : null}
                     {i.src !== "ITEMS" ? <span className="lv"> · {i.src}</span> : null}
                   </span>
                   <span className="lv">Lv {i.tier}</span>
                 </div>
-              ))}
+                );
+              })}
             </div>
           ))}
           {items && rows.length === 0 && (

@@ -6,6 +6,7 @@ import { GearSlot } from "./GearSlot";
 import { GearPicker } from "./GearPicker";
 import { GearDrawer } from "./GearDrawer";
 import { CLASS_NAMES, SLOT_ITEMS } from "./gearSlots";
+import { iconClass } from "../../lib/icons";
 import { useBuild } from "./BuildContext";
 import { TITLES } from "./titles";
 import type { Item } from "../../lib/items";
@@ -42,6 +43,9 @@ export function CharacterGear() {
   const [pending, setPending] = useState<{ slot: string; item: Item } | null>(null);
 
   const values = Object.fromEntries(Object.entries(gear).map(([s, e]) => [s, e.item.name]));
+  const icons = Object.fromEntries(
+    Object.entries(gear).map(([s, e]) => [s, iconClass(e.item.icon) ?? ""]),
+  );
   const openSlot = (slot: string) => {
     if (SLOT_ITEMS[slot]) setPicking(slot);
   };
@@ -81,9 +85,9 @@ export function CharacterGear() {
       </div>
 
       <div className="gear">
-        <GearColumn slots={LEFT_SLOTS} values={values} onSlotClick={openSlot} />
+        <GearColumn slots={LEFT_SLOTS} values={values} icons={icons} onSlotClick={openSlot} />
         <GearViewer label="3D character" minHeight={340} />
-        <GearColumn slots={RIGHT_SLOTS} values={values} onSlotClick={openSlot}>
+        <GearColumn slots={RIGHT_SLOTS} values={values} icons={icons} onSlotClick={openSlot}>
           <GearSlot label="Pet" active={hasPet} onClick={togglePet} />
         </GearColumn>
       </div>
