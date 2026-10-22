@@ -252,13 +252,6 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
             </>
           )}
 
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-
           {set && setTiers.length > 0 && (
             <>
               <div className="sec">
