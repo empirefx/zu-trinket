@@ -88,16 +88,19 @@ export default function MapView({ meta, transform, points, visible, onCursor, fo
       // off this map's image. tiny epsilon for float edge cases.
       if (px < -1 || py < -1 || px > t.w + 1 || py > t.h + 1) continue;
       const c = catColor(p.cat);
-      L.circleMarker([py, px], {
-        radius: 5,
-        color: "#0f172a",
-        weight: 1.5,
-        fillColor: c,
-        fillOpacity: 0.95,
+      L.marker([py, px], {
+        icon: L.divIcon({
+          // the CatPanel mask icons, in the category color; className "" drops
+          // Leaflet's default white box around div icons
+          html: `<span class="cat-icon cat-${p.cat} marker-icon" style="color:${c}"></span>`,
+          className: "",
+          iconSize: [20, 20],
+          iconAnchor: [10, 10],
+        }),
       })
         .bindTooltip(
           `<b>${escapeHtml(p.name)}</b><br/>${p.gx.toFixed(0)}, ${p.gy.toFixed(0)}, ${p.gz.toFixed(0)}`,
-          { direction: "top", offset: [0, -4] },
+          { direction: "top", offset: [0, -10] },
         )
         .addTo(g);
     }

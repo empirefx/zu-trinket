@@ -18,7 +18,7 @@ export function CategoryPanel({ categories, visible, countByCat, onToggle }: Cat
         onSelectionChange={(k) => onToggle(String(k))}
         aria-label="Categories"
         data-testid="category-tabs"
-        variant="light"
+        variant="secondary"
       >
         <Tabs.ListContainer className="w-full">
           <Tabs.List className="grid grid-cols-3 gap-x-1 gap-y-1 p-0" >
@@ -38,7 +38,7 @@ export function CategoryPanel({ categories, visible, countByCat, onToggle }: Cat
                       : "text-muted-foreground hover:bg-black/40 hover:text-foreground"
                   }`}
                 >
-                  <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: c.color }} />
+                  <span className={`cat-icon cat-${c.key} shrink-0`} />
                   <span className="text-xs truncate">{c.label}</span>
                   <span className="text-[10px] text-muted-foreground ml-auto tabular-nums">{count}</span>
                 </Tabs.Tab>

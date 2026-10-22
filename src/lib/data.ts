@@ -69,11 +69,11 @@ export function fromPixel(t: Transform, px: number, py: number): [number, number
 export type Category = { key: string; label: string; color: string };
 
 export const CATEGORIES: Category[] = [
-  { key: "npc", label: "NPC", color: "#38bdf8" },
-  { key: "mob", label: "Monster", color: "#f87171" },
-  { key: "object", label: "Object", color: "#94a3b8" },
-  { key: "stone", label: "Stone", color: "rgb(232, 195, 106)" },
-  { key: "herb", label: "Herb", color: "#86efac" },
+  { key: "npc", label: "NPC", color: "#4aa3ff" },
+  { key: "mob", label: "Monster", color: "#e5484d" },
+  { key: "object", label: "Object", color: "#f5a524" },
+  { key: "stone", label: "Stone", color: "#9ca3af" },
+  { key: "herb", label: "Herb", color: "#30a46c" },
 ];
 
 export function catColor(cat: string): string {

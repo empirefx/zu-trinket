@@ -21,3 +21,49 @@ body {
   background: #111;
   z-index: 1;
 }
+/* category icons: currentColor mask icons (npc/mob/stone/herb) and a plain
+   radial dot for objects — one icon per CategoryPanel tab; colors match
+   CATEGORIES in lib/data.ts so tabs and map markers agree */
+.cat-icon {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  -webkit-mask: var(--m) center / contain no-repeat;
+  mask: var(--m) center / contain no-repeat;
+}
+
+.cat-npc {
+  color: #4aa3ff;
+  --m: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='8' r='4'/><path d='M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7z'/></svg>")
+}
+
+.cat-mob {
+  color: #e5484d;
+  --m: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' stroke-linecap='round' stroke-linejoin='round'><mask id='m'><rect width='24' height='24' fill='white'/><path d='M9 12h.01M15 12h.01M9 17l1.5-1.5L12 17l1.5-1.5L15 17' fill='none' stroke='black' stroke-width='2'/></mask><path mask='url(%23m)' d='M4 3l4 4h8l4-4v9a8 8 0 0 1-16 0z' fill='black' stroke='black' stroke-width='2'/></svg>")
+}
+
+.cat-stone {
+  color: #9ca3af;
+  --m: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' stroke-linecap='round' stroke-linejoin='round'><mask id='m'><rect width='24' height='24' fill='white'/><path d='M6 8l6 3 6-2M12 11v9' fill='none' stroke='black' stroke-width='1.5'/></mask><path mask='url(%23m)' d='M3 17l3-9 6-4 6 3 3 8-4 4H7z' fill='black' stroke='black' stroke-width='2'/></svg>")
+}
+
+.cat-herb {
+  color: #30a46c;
+  --m: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' stroke-linecap='round' stroke-linejoin='round'><path d='M12 21V11' fill='none' stroke='black' stroke-width='2'/><path d='M12 11C12 6 8 4 4 4c0 4 3 7 8 7zM12 15c0-4 3-6 8-6 0 4-3 7-8 6z' fill='black' stroke='black' stroke-width='2'/></svg>")
+}
+
+.cat-object {
+  color: #f5a524;
+  -webkit-mask: none;
+  mask: none;
+  background: radial-gradient(circle, currentColor 4px, transparent 4.5px)
+}
+
+/* map markers: the same mask icons at 20px, with a soft edge so flat colors
+   survive the hand-painted art */
+.marker-icon {
+  width: 20px;
+  height: 20px;
+  filter: drop-shadow(0 0 1px rgb(2 6 23 / 90%));
+}
