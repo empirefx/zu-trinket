@@ -26,6 +26,9 @@ export type Point = {
 
 // affine world (x,z) -> game-map pixel: px = a*x + c, py = e*z + f.
 // w/h are the game map's pixel dimensions (the overlay is stretched to fit).
+// ou/ov (optional) = the game-unit coordinate of the image's left/bottom edge
+// (in-game corner calibration); the cursor readout adds them back on top of
+// px/(a*s) -- without them a calibrated transform would read u+34.
 export type Transform = {
   a: number;
   c: number;
@@ -33,6 +36,8 @@ export type Transform = {
   f: number;
   w: number;
   h: number;
+  ou?: number;
+  ov?: number;
 };
 
 export type TransformMap = Record<string, Transform>;

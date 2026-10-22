@@ -25,7 +25,7 @@ export default function MapView({ meta, transform, points, visible, onCursor, fo
   // The game reports the cursor in *map units*: the longer axis of the world
   // rect is 1000 units, so cursor = (world - rect.min) * 1000 / max(size).
   // The map pixel is px = a * (gx - rect.minX), hence the factor below.
-  const kRef = useRef<{ kx: number; kz: number } | null>(null);
+  const kRef = useRef<{ kx: number; kz: number; ox: number; oz: number } | null>(null);
 
   // create map once
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function MapView({ meta, transform, points, visible, onCursor, fo
     // latlng = [py, px] in CRS.Simple, so lng/lat are the in-game map coords.
     m.on("mousemove", (e: L.LeafletMouseEvent) => {
       const k = kRef.current;
-      onCursor(k ? [e.latlng.lng * k.kx, e.latlng.lat * k.kz] : null);
+      onCursor(k ? [e.latlng.lng * k.kx + k.ox, e.latlng.lat * k.kz + k.oz] : null);
     });
     m.on("mouseout", () => onCursor(null));
     map.current = m;
@@ -61,7 +61,10 @@ export default function MapView({ meta, transform, points, visible, onCursor, fo
     const t = transform[meta.slug] ?? null;
     const r = meta.rect;
     const s = r ? Math.max(r[2], r[3]) / 1000 : 0;
-    kRef.current = t && s > 0 ? { kx: 1 / (t.a * s), kz: 1 / (t.e * s) } : null;
+    kRef.current =
+      t && s > 0
+        ? { kx: 1 / (t.a * s), kz: 1 / (t.e * s), ox: t.ou ?? 0, oz: t.ov ?? 0 }
+        : null;
     // overlay covers the game map's pixel box (image is stretched to fit)
     const w = t ? t.w : meta.width;
     const h = t ? t.h : meta.height;
