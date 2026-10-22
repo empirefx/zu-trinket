@@ -23,8 +23,8 @@ export function TopTabs({ activeKey, onChange }: TopTabsProps) {
       <div
         className={`flex h-8 items-center gap-2 px-3 text-sm font-medium rounded transition-colors cursor-pointer select-none ${
           activeKey === "map"
-            ? "bg-primary text-primary-foreground shadow-sm"
-            : "text-foreground hover:bg-default/50 active:bg-default/30"
+            ? "bg-white/10 text-foreground font-medium"
+            : "text-muted-foreground hover:bg-black/40 hover:text-foreground"
         }`}
         onClick={() => onChange("map")}
         role="tab"
@@ -35,8 +35,8 @@ export function TopTabs({ activeKey, onChange }: TopTabsProps) {
       <div
         className={`flex h-8 items-center justify-center px-3 text-sm font-medium rounded transition-colors cursor-pointer select-none ${
           activeKey === "gear"
-            ? "bg-primary text-primary-foreground shadow-sm"
-            : "text-foreground hover:bg-default/50 active:bg-default/30"
+            ? "bg-white/10 text-foreground font-medium"
+            : "text-muted-foreground hover:bg-black/40 hover:text-foreground"
         }`}
         onClick={() => onChange("gear")}
         role="tab"

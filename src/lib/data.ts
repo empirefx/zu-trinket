@@ -19,6 +19,9 @@ export type Point = {
   cat: string;
   map: string | null;
   extra: [number, number, number][];
+  // OBJS.ZU1: the NPC's function (its "title") and its level; 0 = unknown
+  func: string;
+  level: number;
 };
 
 // affine world (x,z) -> game-map pixel: px = a*x + c, py = e*z + f.

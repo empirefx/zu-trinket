@@ -65,19 +65,22 @@ export function MapPage({ data, slug, setSlug, isActive }: MapPageProps) {
 
       <SearchPanel
         data={data}
+        meta={meta}
+        points={mapPoints}
         mquery={mquery}
         setMquery={setMquery}
         results={results}
         handleResultClick={handleResultClick}
         mapName={mapName}
-      />
+      >
+        <CategoryPanel
+          categories={CATEGORIES}
+          visible={visible}
+          countByCat={countByCat}
+          onToggle={toggleCategory}
+        />
+      </SearchPanel>
       <MapListPanel data={data} slug={slug} onSelect={setSlug} />
-      <CategoryPanel
-        categories={CATEGORIES}
-        visible={visible}
-        countByCat={countByCat}
-        onToggle={toggleCategory}
-      />
       <CursorReadout cursor={cursor} />
     </div>
   );

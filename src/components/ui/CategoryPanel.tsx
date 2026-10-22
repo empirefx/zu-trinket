@@ -9,8 +9,8 @@ interface CategoryPanelProps {
 
 export function CategoryPanel({ categories, visible, countByCat, onToggle }: CategoryPanelProps) {
   return (
-    <div id="category-panel" className="absolute top-44 right-3 z-50" data-testid="category-panel">
-      <div className="w-40 bg-default/90 backdrop-blur-sm border border-divider rounded-sm p-1.5 space-y-1">
+    <div id="category-panel" className="w-full" data-testid="category-panel">
+      <div className="grid grid-cols-3 gap-x-3 gap-y-1">
         {categories.map((c) => {
           const count = countByCat[c.key] ?? 0;
           const isEmpty = count === 0;
@@ -26,11 +26,9 @@ export function CategoryPanel({ categories, visible, countByCat, onToggle }: Cat
                 disabled={isEmpty}
                 className="h-3.5 w-3.5 rounded border-border bg-transparent text-primary focus:ring-1.5 focus:ring-ring"
               />
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: c.color }} />
-              <span className="text-xs">{c.label}</span>
-              <span className="text-[10px] text-muted-foreground ml-1">
-                {count}
-              </span>
+              <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: c.color }} />
+              <span className="text-xs truncate">{c.label}</span>
+              <span className="text-[10px] text-muted-foreground ml-auto tabular-nums">{count}</span>
             </label>
           );
         })}
