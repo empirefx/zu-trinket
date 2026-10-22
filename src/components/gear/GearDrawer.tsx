@@ -68,12 +68,20 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
   const rk = item.ranks[Math.min(rank, maxRank)] ?? [item.atkMin, item.atkMax, item.phys, item.mag];
   const [rAtkMin, rAtkMax, rPhys, rMag] = rk;
   const hasAttack = !!(rAtkMin || rAtkMax);
+  // The character level the gear needs - the item record's own "YearsNeed"
+  // (ITEMS +332).  It grows a little with the rank, so the chosen rank's
+  // value is shown.  0 means the game does not write one down.
+  const reqLevel =
+    item.reqLevels?.[Math.min(rank, (item.reqLevels?.length ?? 1) - 1)] || item.reqLevel;
   const base: [string, string][] = [
     ["Gear level", String(item.tier)],
-    // Only the craftable grades have their level requirement written down
-    // (SPELLSEX); for the rest the game does not say.
-    ["Required Level", item.reqLevel ? String(item.reqLevel) : "—"],
+    ["Required Level", reqLevel ? String(reqLevel) : "—"],
   ];
+  // The crafting recipe has a level of its own (SPELLSEX) - only the
+  // craftable grades have one, and it is not the same number.
+  if (item.craftLevel) {
+    base.push(["Craft Level", String(item.craftLevel)]);
+  }
   if (hasAttack) base.push(["Attack", range(rAtkMin, rAtkMax)]);
   else {
     base.push(["Phys Def", num(rPhys)]);
@@ -137,12 +145,6 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
               </div>
             ))}
           </div>
-
-          {item.src && item.src !== "ITEMS" && (
-            <div className="picker-note">
-              Not in the live client item table (ITEMS) — this record comes from {item.src}.
-            </div>
-          )}
 
           <div className="sec">
             Enhance <span className="sec-val">{shownEnh}{shownPct > 0 && ` · +${shownPct}%`}</span>
@@ -217,14 +219,6 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
               );
             })}
           </div>
-          {activeMask > 0 && (
-            <div className="picker-note">
-              Active set {activeMask} ({ELEMENTS.filter(([k]) => onElem.has(k)).map(([k]) => k).join(" + ")}) — the values
-              are the item's own (ITEMS +376) times the game's multiplier for that set
-              {enh > 0 ? ` and the enhance factor ×${enhFactor.toFixed(3)}` : ""}.
-            </div>
-          )}
-
           {attrs.length > 0 && (
             <>
               <div className="sec">
@@ -245,6 +239,15 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) 
                         {info && info.name !== a ? <span className="attr-note"> ({info.name})</span> : null}
                         {" — "}
                         <span className="attr-desc">{info?.desc ?? ""}</span>                      </span>
+                        <span className="attr-desc">{info?.desc ?? ""}</span>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
                     </div>
                   );
                 })}

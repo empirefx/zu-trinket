@@ -24,10 +24,17 @@ export type Item = {
   // from the item record (ITEMS +376). null = the slot was overwritten by a
   // stray word in the shipped data.
   elems: (number | null)[][];
-  // Character level the gear needs. Only the craftable grades (superior /
-  // legendary) have one written down - SPELLSEX "Creates ... (Requires
-  // Level N)" - so 0 means "not stated in the data".
+  // Character level the gear needs - the item record's own "YearsNeed"
+  // (ITEMS +332).  0 means the game does not write one down for that item.
   reqLevel: number;
+  // The same, per upgrade rank: the requirement grows a little with the
+  // rank (a tier-7 weapon needs 192 at rank 0 and 203 at rank 9).
+  reqLevels: number[];
+  // Character level the *crafting recipe* needs - SPELLSEX "Creates ...
+  // (Requires Level N)".  Only the craftable grades have one, and it is a
+  // different number from reqLevel (it is the recipe's level, not the
+  // item's).
+  craftLevel: number;
   // Which item table the record came from. "ITEMS" is the table the shipped
   // client loads; "ITEMS2"/"ITEMS3" are an older/other generation.
   src: string;

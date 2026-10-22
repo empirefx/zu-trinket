@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { loadItems, loadStar, loadSets, type Item, type GearSet, type StarCurves } from "../lib/items";
+import { loadItems, loadStar, loadSets, loadStones, type Item, type GearSet, type StarCurves, type Stone } from "../lib/items";
 
 export function useItems() {
   const [items, setItems] = useState<Item[] | null>(null);

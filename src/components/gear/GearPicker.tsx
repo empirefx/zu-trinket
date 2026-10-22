@@ -4,19 +4,18 @@ import { useItems } from "../../hooks/useItems";
 import { pretty, CLASS_NAMES, SLOT_ITEMS, uniqueItems } from "./gearSlots";
 import type { Item } from "../../lib/items";
 
-// The three gear grades the game has, as the item description spells them out
-// ("<Class>'s level <N> <Grade> <Slot>"):
-//   common    - no grade word: the plain gear, "immortal" in the Chinese game
+// The two gear grades the app lists (the item description spells them out:
+// "<Class>'s level <N> <Grade> <Slot>"):
 //   superior  - "Superior"  = the suits (suit pieces come in sets)
 //   legendary - "Legendary" = the epics
-// Amber is a fourth word that only shows on stones, not on wearable gear.
+// The common gear (no grade word - the plain gear, "immortal" in the Chinese
+// game) is not in items.json: the app lists the craftable grades only.
 //
 // The live client table (ITEMS) has NO superior gear for waistband, spirit
 // armour and spirit breath - only common and legendary - so the picker says so
 // instead of silently showing an empty group.
-const GRADES = ["common", "superior", "legendary"] as const;
+const GRADES = ["superior", "legendary"] as const;
 const GRADE_LABEL: Record<string, string> = {
-  common: "Common (Immortal)",
   superior: "Suits (Superior)",
   legendary: "Epics (Legendary)",
 };

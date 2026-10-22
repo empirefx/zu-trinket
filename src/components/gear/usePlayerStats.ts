@@ -54,15 +54,18 @@ export function usePlayerStats() {
     const move = Math.floor(curve.move * moveMult);
     const lossRate = Math.max(0, +(GEAR_LOSS * (1 - (mod?.drop ?? 0) / 100)).toFixed(2));
 
-    // Fighting Power. Engine-side (SC_GetCharTotalPower); weights fitted to four
-    // live level-0 characters (Sun Warrior 68, Swordsman 59, Bead Fairy 59,
-    // Summoner 67) - all four match. ponytail: approximation; it has no
-    // attack/defence term, so equipped gear does not move it (no geared samples
-    // to refit against).
+    // Fighting Power. The game computes it on the SERVER: the client only
+    // reads char+0x3e5b1, which the character-property packet fills in
+    // (client.lto, SC_GetCharTotalPower / the packet handler).  This is an
+    // estimate fitted to four live level-0 characters (Sun Warrior 68,
+    // Swordsman 59, Bead Fairy 59, Summoner 67) - all four match, but it has
+    // no attack/defence term, so equipped gear does not move it (no geared
+    // samples to refit against).  ponytail: shown as an estimate, because
+    // presenting it as the game's number would be a lie.
     const power = Math.round(0.26 * hp + 0.093 * mp + 0.92 * dodge + 6.5);
 
     return [
-      { label: "Fighting Power", value: power.toLocaleString() },
+      { label: "Fighting Power (est.)", value: power.toLocaleString() },
       { label: "Health", value: `${hp} / ${hp}` },
       { label: "Mana", value: `${mp} / ${mp}` },
       { label: "Damage", value: `${minAtk}~${maxAtk}${bonus(dmgBonus)}` },
