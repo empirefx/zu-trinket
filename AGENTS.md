@@ -22,13 +22,13 @@ src/
 ├── pages/
 │   ├── MapPage.tsx         # Map tab: composes SearchPanel, MapListPanel, CategoryPanel, CursorReadout, MapView
 │   └── gear/
-│       ├── GearPage.tsx    # Gear tab: BuildProvider + 4 boxes in `.row`
+│       ├── GearPage.tsx    # Gear tab: BuildProvider + Character/Stats boxes + the Pet|Talent tabs
 │       └── gear.css        # gear-page palette/box/gear styling
 ├── components/
 │   ├── ui/
-│   │   ├── SearchPanel.tsx      # Top-left: input + results popover (click to jump)
+│   │   ├── SearchPanel.tsx      # Top-right: category grid + tabs (search/NPC/monster) + the list
 │   │   ├── MapListPanel.tsx     # Left-middle: scrollable list of all 64 maps, active highlighted
-│   │   ├── CategoryPanel.tsx    # Top-right: checkbox toggles with color dots + counts
+│   │   ├── CategoryPanel.tsx    # HeroUI Tabs: category tab toggles inside the search panel
 │   │   ├── CursorReadout.tsx    # Bottom-left: shows "x N y N"
 │   │   └── TopTabs.tsx          # Top bar: Logo (disabled), Map, Gear
 │   ├── map/
