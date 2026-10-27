@@ -10,6 +10,7 @@ import { iconClass } from "../../lib/icons";
 import { useBuild } from "./BuildContext";
 import { TITLES } from "./titles";
 import type { Item } from "../../lib/items";
+import { Description, Label, ListBox, Modal } from "@heroui/react";
 
 const LEFT_SLOTS = [
   "Precious",
@@ -41,6 +42,7 @@ export function CharacterGear() {
   const { classId, level, title, hasPet, gear, setClassId, setLevel, setTitle, togglePet, setGear } = useBuild();
   const [picking, setPicking] = useState<string | null>(null);
   const [pending, setPending] = useState<{ slot: string; item: Item } | null>(null);
+  const [titleModalOpen, setTitleModalOpen] = useState(false);
 
   const values = Object.fromEntries(Object.entries(gear).map(([s, e]) => [s, e.item.name]));
   const icons = Object.fromEntries(
@@ -65,13 +67,14 @@ export function CharacterGear() {
         </label>
         <label>
           Title
-          <select value={title} onChange={(e) => setTitle(e.target.value)}>
-            {TITLES_OPTIONS.map((t) => (
-              <option key={t.name} value={t.name} title={t.effect}>
-                {t.name}
-              </option>
-            ))}
-          </select>
+          <button
+            type="button"
+            className="w-[140px] text-left px-2 py-1 border rounded cursor-pointer"
+            onClick={() => setTitleModalOpen(true)}
+            title={TITLES_OPTIONS.find((t) => t.name === title)?.effect || ""}
+          >
+            {title}
+          </button>
         </label>
         <br />
         <label>
@@ -119,6 +122,43 @@ export function CharacterGear() {
           }}
         />
       )}
+      <Modal isOpen={titleModalOpen} onOpenChange={setTitleModalOpen}>
+        <Modal.Backdrop>
+          <Modal.Container>
+            <Modal.Dialog className="sm:max-w-[420px]">
+              <Modal.CloseTrigger />
+              <Modal.Header>
+                <Modal.Heading>Select Title</Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <ListBox
+                  aria-label="Title"
+                  selectionMode="single"
+                  selectedKeys={new Set([title])}
+                  onSelectionChange={(keys) => {
+                    const [key] = Array.from(keys);
+                    if (key) {
+                      setTitle(String(key));
+                      setTitleModalOpen(false);
+                    }
+                  }}
+                  className="max-h-[400px] overflow-auto"
+                >
+                  {TITLES_OPTIONS.map((t) => (
+                    <ListBox.Item key={t.name} id={t.name} textValue={t.name}>
+                      <div className="flex flex-col">
+                        <Label>{t.name}</Label>
+                        {t.effect ? <Description>{t.effect}</Description> : null}
+                      </div>
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Modal.Body>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
     </Box>
   );
 }
