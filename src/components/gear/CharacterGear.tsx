@@ -125,7 +125,7 @@ export function CharacterGear() {
       <Modal isOpen={titleModalOpen} onOpenChange={setTitleModalOpen}>
         <Modal.Backdrop>
           <Modal.Container>
-            <Modal.Dialog className="sm:max-w-[420px]">
+            <Modal.Dialog className="sm:max-w-[520px]">
               <Modal.CloseTrigger />
               <Modal.Header>
                 <Modal.Heading>Select Title</Modal.Heading>
