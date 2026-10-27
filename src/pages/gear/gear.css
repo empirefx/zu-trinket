@@ -589,6 +589,24 @@
 }
 
 /* the talent trees: 3 columns, each a tree of 4 wide x 8 tall */
+.gear-page .talent-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gear-page .talent-bar {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  color: #8b93a3;
+  font-size: 12px;
+}
+
+.gear-page .talent-bar b {
+  color: #e8c36a;
+}
+
 .gear-page .talent-trees {
   display: flex;
   gap: 40px;
@@ -598,7 +616,7 @@
 .gear-page .talent-tree {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .gear-page .talent-title {
@@ -608,23 +626,125 @@
   text-align: center;
 }
 
+.gear-page .talent-points {
+  color: #8b93a3;
+  font-size: 11px;
+  text-align: center;
+}
+
 .gear-page .talent-grid {
   display: grid;
-  grid-template-columns: repeat(4, 48px);
-  grid-template-rows: repeat(8, 48px);
+  grid-template-columns: repeat(4, 32px);
+  grid-template-rows: repeat(8, 32px);
   gap: 8px;
 }
 
 .gear-page .talent-node {
-  width: 48px;
-  height: 48px;
-  border: 1px solid #3a4150;
-  border-radius: 3px;
-  background: #11131a;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+/* a node that cannot be learned yet - only the icon is greyed out, so the
+   tooltip stays readable */
+.gear-page .talent-node.locked {
+  cursor: not-allowed;
+}
+
+.gear-page .talent-node.locked .gear-icon {
+  opacity: 0.28;
+}
+
+/* a node a point can be spent on */
+.gear-page .talent-node.learnable:hover .gear-icon {
+  outline: 1px solid #e8c36a;
+}
+
+/* a learned node */
+.gear-page .talent-node.learned .gear-icon {
+  outline: 1px solid #e8c36a;
+}
+
+.gear-page .talent-node.maxed .gear-icon {
+  outline: 1px solid #e8c36a;
+  box-shadow: 0 0 6px rgba(232, 195, 106, 0.7);
+}
+
+/* the learned rank, like the game's own badge */
+.gear-page .talent-rank {
+  position: absolute;
+  right: -2px;
+  bottom: -4px;
+  min-width: 12px;
+  padding: 0 2px;
+  border-radius: 6px;
+  background: #e8c36a;
+  color: #1e222b;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 13px;
+  text-align: center;
+}
+
+.gear-page .talent-node .gear-icon {
+  border: none;
+  background-color: transparent;
 }
 
 /* a cell with no talent stays empty - no style at all */
 .gear-page .talent-gap {
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
+}
+
+/* the talent tooltip: the name, the game's description and the node's cost */
+.gear-page .talent-tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: max-content;
+  max-width: 260px;
+  padding: 6px 8px;
+  background: #1e222b;
+  border: 1px solid #3a4150;
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  color: #dfe3ea;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+  /* the tooltip is a reference, not text to copy */
+  user-select: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.gear-page .talent-node:hover .talent-tip,
+.gear-page .talent-node:focus-visible .talent-tip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.gear-page .talent-tip b {
+  color: #e8c36a;
+}
+
+.gear-page .talent-intro {
+  margin-top: 2px;
+}
+
+.gear-page .talent-meta {
+  color: #8b93a3;
+  margin-top: 4px;
+}
+
+.gear-page .talent-locked {
+  color: #d08b6a;
+  margin-top: 4px;
 }

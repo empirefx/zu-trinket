@@ -9,11 +9,15 @@ interface BuildState {
   title: string;
   hasPet: boolean;
   gear: Record<string, EquipEntry>;
+  // the learned talent ranks: a talent node's id -> its learned rank
+  talentRanks: Record<number, number>;
   setClassId: (id: ClassId) => void;
   setLevel: (level: number) => void;
   setTitle: (title: string) => void;
   togglePet: () => void;
   setGear: (slot: string, entry: EquipEntry | null) => void;
+  // learn the next rank of a talent (one point)
+  learnTalent: (id: number) => void;
 }
 
 const BuildContext = createContext<BuildState | null>(null);
@@ -24,6 +28,7 @@ export function BuildProvider({ children }: { children: ReactNode }) {
   const [title, setTitle] = useState("None");
   const [hasPet, setHasPet] = useState(false);
   const [gear, setGearState] = useState<Record<string, EquipEntry>>({});
+  const [talentRanks, setTalentRanks] = useState<Record<number, number>>({});
 
   return (
     <BuildContext.Provider
@@ -33,6 +38,7 @@ export function BuildProvider({ children }: { children: ReactNode }) {
         title,
         hasPet,
         gear,
+        talentRanks,
         setClassId,
         setLevel,
         setTitle,
@@ -44,6 +50,8 @@ export function BuildProvider({ children }: { children: ReactNode }) {
             else delete next[slot];
             return next;
           }),
+        learnTalent: (id) =>
+          setTalentRanks((r) => ({ ...r, [id]: (r[id] ?? 0) + 1 })),
       }}
     >
       {children}
