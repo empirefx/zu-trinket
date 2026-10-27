@@ -74,6 +74,35 @@ src/
 | `src/components/map/MapView.tsx` | Leaflet integration; **only place touching Leaflet API** |
 | `src/pages/MapPage.tsx` | Layout composition; no logic, just wiring |
 
+## The search panel (the in-game "Search" dialog)
+`SearchPanel.tsx` has three tabs, like the game's dialog
+(`zu-re/docs/search-ui.md`):
+- **Search** — the global name search over every point (all maps)
+- **NPC** — the current map's NPCs: name · **function** · (x,y) in map units
+- **Monster** — the current map's monsters: name · **level** · (x,y)
+
+A row only shows the middle column when there is something to show (no
+function / no known level → the column is dropped, not filled with a dash).
+The **category panel** renders as a **HeroUI `Tabs` tab group**
+(`CategoryPanel.tsx`): one tab per category, but the tabs toggle (multi-select)
+— RAC Tabs is single-select, so `selectedKey` stays `""` and
+`onSelectionChange(key)` toggles the category; the selected look comes from the
+`visible` set, not from RAC's `aria-selected`. Each tab shows a **mask icon**
+(`.cat-icon .cat-<key>` in `src/index.css`, currentColor + SVG masks; the
+Object tab is a radial dot). The `CATEGORIES` colors in `lib/data.ts` match
+the icon colors, so tabs and map markers agree. Map markers use the same
+icons: `MapView.tsx` draws each point as an `L.divIcon`
+(`<span class="cat-icon cat-<key> marker-icon">`, 20 px, `.marker-icon`
+adds a 1 px drop-shadow for contrast), replacing the old circle markers.The game's fourth tab (the "Yellows" — the strong mobs) is not listed: the
+client's colour rule for it was not pinned down, so there is no honest cut to
+make.
+
+The *function* and the *level* come from `OBJS.ZU1` (title @+30, level
+@0xA0), matched to the keyword points **by name**; `build_data.py` emits them
+as `func` / `level` per point.  The coordinates are the game's **map units**
+(`(world - rect.min) * 1000 / max(sizeX,sizeZ)`) — the same numbers the
+in-game cursor readout shows, so the panel can be compared with the game.
+
 ## Character Build Data (Gear Page)
 
 ### Gear Slots (from skeleton.html / NEWCHAR.LUA)

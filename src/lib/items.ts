@@ -35,8 +35,8 @@ export type Item = {
   // different number from reqLevel (it is the recipe's level, not the
   // item's).
   craftLevel: number;
-  // Which item table the record came from. "ITEMS" is the table the shipped
-  // client loads; "ITEMS2"/"ITEMS3" are an older/other generation.
+  // Which item table the record came from - always "ITEMS", the one table
+  // the shipped client loads (the other generations are never read).
   src: string;
 };
 
