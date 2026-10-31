@@ -42,15 +42,16 @@ interface GearDrawerProps {
   appSlot: string;
   onCancel: () => void;
   onAdd: (entry: EquipEntry) => void;
+  initial?: EquipEntry;
 }
 
-export function GearDrawer({ item, appSlot, onCancel, onAdd }: GearDrawerProps) {
-  const [enhRaw, setEnh] = useState(0);
-  const [rank, setRank] = useState(0);
-  const [on, setOn] = useState<Set<string>>(new Set());
+export function GearDrawer({ item, appSlot, onCancel, onAdd, initial }: GearDrawerProps) {
+  const [enhRaw, setEnh] = useState(initial?.enhance ?? 0);
+  const [rank, setRank] = useState(initial?.rank ?? 0);
+  const [on, setOn] = useState<Set<string>>(new Set(initial?.attrs ?? []));
   // which elements are activated on the item: that is the player's choice
   // (element stones), it is NOT in the tables - the values are.
-  const [onElem, setOnElem] = useState<Set<string>>(new Set());
+  const [onElem, setOnElem] = useState<Set<string>>(new Set(initial?.elements ?? []));
   const [hover, setHover] = useState<{ n: number; v: number } | null>(null);
   const star = useStar();
   const sets = useSets();
