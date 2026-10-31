@@ -924,3 +924,31 @@
     border-width: 1px 0 0 0;
   }
 }
+/* --- character gear item card (skeleton: gear-tooltip-skeleton.html) --- */
+.gear-page .hover-tip:has(.item-tip) {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  max-width: none;
+}
+.gear-page .item-tip {
+  width: 360px;
+  padding: 12px;
+  background: #000;
+  color: #fff;
+  font: 12px/1.45 Tahoma, Verdana, sans-serif;
+}
+.gear-page .item-tip p { margin: 0; }
+.gear-page .item-tip .center { text-align: center; }
+.gear-page .item-tip .gap { margin-top: 8px; }
+.gear-page .item-tip .indent { padding-left: 12px; }
+.gear-page .item-tip .o { color: #ff9933; }
+.gear-page .item-tip .g { color: #33dd33; }
+.gear-page .item-tip .c { color: #33ddee; }
+.gear-page .item-tip .b { color: #4a8cff; }
+.gear-page .item-tip .y { color: #ffee33; }
+.gear-page .item-tip .x { color: #888; }
+.gear-page .item-tip .r { color: #ff4444; }
+.gear-page .item-tip .star { color: #ffb020; font-size: 18px; letter-spacing: 6px; }

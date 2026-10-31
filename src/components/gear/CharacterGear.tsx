@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Box } from "./Box";
 import { GearColumn } from "./GearColumn";
 import { GearViewer } from "./GearViewer";
 import { GearSlot } from "./GearSlot";
+import { GearTooltip } from "./GearTooltip";
 import { GearPicker } from "./GearPicker";
 import { GearDrawer } from "./GearDrawer";
 import { PetPicker } from "./PetPicker";
@@ -54,6 +55,8 @@ export function CharacterGear() {
   const icons = Object.fromEntries(
     Object.entries(gear).map(([s, e]) => [s, iconClass(e.item.icon) ?? ""]),
   );
+  const tips: Record<string, ReactNode> = {};
+  for (const [slot, entry] of Object.entries(gear)) tips[slot] = <GearTooltip entry={entry} />;
   const openSlot = (slot: string) => {
     const entry = gear[slot];
     if (entry) setPending({ slot, item: entry.item, entry });
@@ -100,6 +103,7 @@ export function CharacterGear() {
           slots={LEFT_SLOTS}
           values={values}
           icons={icons}
+          tips={tips}
           onSlotClick={openSlot}
           onSlotClear={(slot) => { if (gear[slot]) setPendingClear(slot); }}
         />
@@ -108,6 +112,7 @@ export function CharacterGear() {
           slots={RIGHT_SLOTS}
           values={values}
           icons={icons}
+          tips={tips}
           onSlotClick={openSlot}
           onSlotClear={(slot) => { if (gear[slot]) setPendingClear(slot); }}
         >
