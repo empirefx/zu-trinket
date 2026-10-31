@@ -15,8 +15,8 @@ import type { EquipEntry, Item } from "../../lib/items";
 // element mask / potential value / attribute +N values aren't stored in the
 // record, so Five elements and the Attributes list are click-to-toggle reference
 // choices (stored on the entry) rather than per-item rolls.
-const glyph = (i: number) => (i < 10 ? "★" : i < 20 ? "☾" : "☀");
-const glyphColor = (i: number) => (i < 10 ? "#e8c36a" : i < 20 ? "#9ecbff" : "#ffd36e");
+export const glyph = (i: number) => (i < 10 ? "★" : i < 20 ? "☾" : "☀");
+export const glyphColor = (i: number) => (i < 10 ? "#e8c36a" : i < 20 ? "#9ecbff" : "#ffd36e");
 
 const num = (v: number | null) => (v === null ? "—" : String(v));
 const range = (a: number | null, b: number | null) => `${num(a)} ~ ${num(b)}`;
@@ -35,7 +35,7 @@ const ELEMENTS: [string, number][] = [
 ];
 // The guide and the REFINE table call the first element "Gold"; ATTR_INFO is
 // keyed by that name.
-const ATTR_KEY: Record<string, string> = { Metal: "Gold" };
+export const ATTR_KEY: Record<string, string> = { Metal: "Gold" };
 
 interface GearDrawerProps {
   item: Item;

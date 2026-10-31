@@ -8,6 +8,7 @@ export type RankStats = [number | null, number | null, number | null, number | n
 export type Item = {
   id: number;
   name: string;
+  names?: string[];
   class: string;
   tier: number;
   slot: string;
