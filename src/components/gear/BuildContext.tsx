@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import type { EquipEntry } from "../../lib/items";
 import type { PetGearItem } from "../../lib/pets";
+import type { BuildSnapshot } from "../../lib/builds";
 
 export type ClassId = "swordsman" | "sunwarrior" | "beadfairy" | "moonmaiden" | "summoner";
 
@@ -40,6 +41,9 @@ interface BuildState {
   setGear: (slot: string, entry: EquipEntry | null) => void;
   // change a talent's learned rank by one point (d = -1 lowers it)
   learnTalent: (id: number, d?: 1 | -1) => void;
+  // the whole build as one value (save) and its reverse (load)
+  snapshot: () => BuildSnapshot;
+  applyBuild: (s: BuildSnapshot) => void;
 }
 
 const BuildContext = createContext<BuildState | null>(null);
@@ -93,6 +97,15 @@ export function BuildProvider({ children }: { children: ReactNode }) {
           }),
         learnTalent: (id, d = 1) =>
           setTalentRanks((r) => ({ ...r, [id]: Math.max(0, (r[id] ?? 0) + d) })),
+        snapshot: () => ({ classId, level, title, gear, talentRanks, pet }),
+        applyBuild: (s) => {
+          setClassId(s.classId);
+          setLevel(s.level);
+          setTitle(s.title);
+          setGearState(s.gear ?? {});
+          setTalentRanks(s.talentRanks ?? {});
+          setPetState(s.pet ?? null);
+        },
       }}
     >
       {children}
