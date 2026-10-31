@@ -2,7 +2,7 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import type { EquipEntry } from "../../lib/items";
 import type { PetGearItem } from "../../lib/pets";
 
-type ClassId = "swordsman" | "sunwarrior" | "beadfairy" | "moonmaiden" | "summoner";
+export type ClassId = "swordsman" | "sunwarrior" | "beadfairy" | "moonmaiden" | "summoner";
 
 // One pet spell slot: the spell kind + the displayed rank (0..9)
 export interface PetSpellAsg {
