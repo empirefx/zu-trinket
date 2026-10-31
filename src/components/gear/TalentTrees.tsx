@@ -93,6 +93,11 @@ export function TalentTrees() {
                   if (!node) return <div key={k} className="talent-gap" />;
                   const st = byId.get(node.id);
                   if (!st) return <div key={k} className="talent-gap" />;
+                  // the text of the rank that is learned: the HUD reads
+                  // GetTalentBaseInfo(instance.ID) and the instance id is the
+                  // current rank's record, so an unlearned node shows rank 1
+                  const intro =
+                    node.intros[Math.min(Math.max(st.rank, 1), node.intros.length) - 1];
                   const cls =
                     "talent-node" +
                     (st.rank > 0 ? " learned" : "") +
@@ -105,7 +110,7 @@ export function TalentTrees() {
                       className={cls}
                       role="button"
                       tabIndex={0}
-                      aria-label={`${node.name} - ${node.intro}`}
+                      aria-label={`${node.name} - ${intro}`}
                       onClick={() => st.learnable && learnTalent(node.id)}
                       onContextMenu={(e) => {
                         e.preventDefault();
@@ -122,7 +127,7 @@ export function TalentTrees() {
                       {st.rank > 0 && <span className="rank-badge">{st.rank}</span>}
                       <div className="hover-tip" role="tooltip">
                         <b>{node.name}</b>
-                        <div className="tip-body">{node.intro}</div>
+                        <div className="tip-body">{intro}</div>
                         <div className="tip-meta">
                           {node.maxRank} rank{node.maxRank > 1 ? "s" : ""}
                           {node.pointNeed ? ` · band at ${node.pointNeed} points` : ""}

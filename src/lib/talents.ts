@@ -4,7 +4,9 @@
 export type TalentNode = {
   id: number;
   name: string;
-  intro: string;
+  // the tooltip text of each rank, rank 1 first - the game writes a fresh
+  // szIntro per rank record, so the numbers grow with the rank
+  intros: string[];
   // the icon file name, e.g. "ICON_JX_STATIC005" - it is in the class sheet
   icon: string;
   // the node index inside its tree
