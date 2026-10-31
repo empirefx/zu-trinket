@@ -1,27 +1,64 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Modal, Tooltip } from "@heroui/react";
 import { useBuild } from "./BuildContext";
 import { CLASS_NAMES } from "./gearSlots";
 import {
+  autosaveDecision,
   type BuildSnapshot,
   deleteBuild,
+  getSelectedId,
   listBuilds,
   MAX_BUILDS,
   saveBuild,
   type SavedBuild,
+  setSelectedId as persistSelectedId,
 } from "../../lib/builds";
 
 export function BuildsBar() {
-  const { snapshot, applyBuild } = useBuild();
+  const { snapshot, applyBuild, classId, level, title, gear, talentRanks, pet } = useBuild();
   const [builds, setBuilds] = useState<SavedBuild[]>(() => listBuilds());
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<SavedBuild | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const lastSnapRef = useRef<string | null>(null);
 
   const apply = (s: BuildSnapshot) =>
     applyBuild(
       s.pet ? { ...s, pet: { ...s.pet, gear: s.pet.gear ?? {}, spells: s.pet.spells ?? {} } } : s,
     );
+
+  const select = (id: string | null) => {
+    setSelectedId(id);
+    persistSelectedId(id);
+  };
+
+  useEffect(() => {
+    const id = getSelectedId();
+    if (!id) return;
+    const b = listBuilds().find((x) => x.id === id);
+    if (b) { apply(b.state); setSelectedId(b.id); }  // already stored — do not re-persist
+    else persistSelectedId(null);
+  }, []);
+
+  useEffect(() => {
+    const snap = JSON.stringify(snapshot());
+    const action = autosaveDecision(lastSnapRef.current, snap, selectedId);
+    lastSnapRef.current = snap;
+    if (action === "skip") return;
+    if (action === "overwrite") {
+      const cur = listBuilds().find((b) => b.id === selectedId);
+      if (cur && saveBuild(cur.name, snapshot(), cur.id)) {
+        setBuilds(listBuilds());
+        setStatus(null);
+      } else if (cur) setStatus("Could not save — storage unavailable");
+      return;
+    }
+    // create: no selection + state changed (first-time visitor, or next change after delete-all)
+    if (listBuilds().length >= MAX_BUILDS) return;
+    const saved = saveBuild("Build " + (listBuilds().length + 1), snapshot());
+    if (saved) { setBuilds(listBuilds()); select(saved.id); setStatus(null); }
+    else setStatus("Could not save — storage unavailable");
+  }, [classId, level, title, gear, talentRanks, pet, selectedId]);
 
   useEffect(() => {
     document
@@ -36,7 +73,7 @@ export function BuildsBar() {
     const saved = saveBuild("Build " + (builds.length + 1), snapshot());
     if (saved) {
       setBuilds(listBuilds());
-      setSelectedId(saved.id);
+      select(saved.id);
       setStatus(null);
     } else {
       setStatus("Could not save — storage unavailable");
@@ -55,7 +92,7 @@ export function BuildsBar() {
     setBuilds(listBuilds());
     if (pendingDelete.id === selectedId) {
       const prev = builds[idx - 1] ?? null;
-      setSelectedId(prev ? prev.id : null);
+      select(prev ? prev.id : null);
       if (prev) apply(prev.state);
     }
     setPendingDelete(null);
@@ -109,7 +146,7 @@ export function BuildsBar() {
                   className="build__select"
                   onClick={() => {
                     apply(b.state);
-                    setSelectedId(b.id);
+                    select(b.id);
                     setStatus(null);
                   }}
                 >
