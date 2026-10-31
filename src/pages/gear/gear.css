@@ -195,6 +195,11 @@
   margin-top: 10px;
 }
 
+/* spell slots carry no slot art (i-S1..i-S8 have no sprite cell) - no bg image */
+.gear-page .spells .slot {
+  background-image: none;
+}
+
 .gear-page .stat {
   display: flex;
   justify-content: space-between;
