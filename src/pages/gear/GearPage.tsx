@@ -8,6 +8,7 @@ import { PetGear } from "../../components/gear/PetGear";
 import { PetStats } from "../../components/gear/PetStats";
 import { TalentTrees } from "../../components/gear/TalentTrees";
 import { BuildProvider } from "../../components/gear/BuildContext";
+import { BuildsBar } from "../../components/gear/BuildsBar";
 
 export function GearPage() {
   const [tab, setTab] = useState("pet");
@@ -19,6 +20,7 @@ export function GearPage() {
         className="gear-page h-full w-full overflow-auto"
         data-testid="gear-page"
       >
+        <BuildsBar />
         <div className="row">
           <CharacterGear />
           <PlayerStats />
