@@ -8,6 +8,7 @@ export const MAX_BUILDS = 10;
 export const MAX_NAME = 40;
 
 const KEY = "zu-builds";
+const SELECTED_KEY = "zu-builds-selected";
 
 export type BuildSnapshot = {
   classId: ClassId;
@@ -84,6 +85,33 @@ export function deleteBuild(id: string): boolean {
   return writeBuilds(listBuilds().filter((b) => b.id !== id));
 }
 
+export function getSelectedId(): string | null {
+  try {
+    const v = localStorage.getItem(SELECTED_KEY);
+    return typeof v === "string" ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setSelectedId(id: string | null): void {
+  try {
+    if (id === null) localStorage.removeItem(SELECTED_KEY);
+    else localStorage.setItem(SELECTED_KEY, id);
+  } catch {
+    // storage full or blocked: selection is a convenience, drop it silently
+  }
+}
+
+export type AutosaveAction = "skip" | "overwrite" | "create";
+
+export function autosaveDecision(prev: string | null, snap: string, selectedId: string | null): AutosaveAction {
+  if (prev === null) return "skip";
+  if (selectedId !== null) return "overwrite";
+  if (snap !== prev) return "create";
+  return "skip";
+}
+
 export function selftest(): void {
   const store = new Map<string, string>();
   const fake = {
@@ -146,6 +174,19 @@ export function selftest(): void {
     saveBuild("B", snapshot);
     assert(deleteBuild(a.id) === true, "delete returns true");
     assert(listBuilds().length === 2 && !listBuilds().some((b) => b.id === a.id), "delete removes one");
+
+    // selected id round-trip
+    assert(getSelectedId() === null, "no stored selection");
+    setSelectedId("x1");
+    assert(getSelectedId() === "x1", "selection round-trips");
+    setSelectedId(null);
+    assert(getSelectedId() === null, "null clears selection");
+
+    // autosave decision
+    assert(autosaveDecision(null, "s", null) === "skip", "first observation skips");
+    assert(autosaveDecision("{}", "s", "id1") === "overwrite", "selected overwrites");
+    assert(autosaveDecision("s", "s", null) === "skip", "unchanged snapshot skips");
+    assert(autosaveDecision("{}", "t", null) === "create", "changed snapshot creates");
   } finally {
     if (desc) Object.defineProperty(globalThis, "localStorage", desc);
     else delete (globalThis as { localStorage?: unknown }).localStorage;
