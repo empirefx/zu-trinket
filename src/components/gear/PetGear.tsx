@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Box } from "./Box";
 import { GearColumn } from "./GearColumn";
 import { GearViewer } from "./GearViewer";
@@ -27,6 +27,7 @@ export function PetGear() {
   const species = pets && pet ? pets.species.find((s) => s.id === pet.speciesId) : null;
   const values: Record<string, string> = {};
   const icons: Record<string, string> = {};
+  const tips: Record<string, ReactNode> = {};
   if (pet) {
     for (const [name, slot] of Object.entries(SLOT_INDEX)) {
       const g = pet.gear[slot];
@@ -34,6 +35,15 @@ export function PetGear() {
       values[name] = g.name;
       const cls = petIconClass(g.icon);
       if (cls) icons[name] = cls;
+      // the shipped tooltip text (the stats are inside it); the quotes wrap
+      // the whole sentence in the source, so they are display noise here
+      tips[name] = (
+        <>
+          <b>{g.name}</b>
+          <div className="tip-body">{g.desc.replace(/^"|"$/g, "")}</div>
+          {g.req > 0 && <div className="tip-meta">Requires Pet Lv {g.req}</div>}
+        </>
+      );
     }
   }
   const openSlot = (name: string) => {
@@ -88,9 +98,9 @@ export function PetGear() {
       </div>
 
       <div className="gear">
-        <GearColumn slots={PET_LEFT_SLOTS} values={values} icons={icons} onSlotClick={openSlot} onSlotClear={clearSlot} />
+        <GearColumn slots={PET_LEFT_SLOTS} values={values} icons={icons} tips={tips} onSlotClick={openSlot} onSlotClear={clearSlot} />
         <GearViewer label="3D pet" minHeight={200} isPet />
-        <GearColumn slots={PET_RIGHT_SLOTS} values={values} icons={icons} onSlotClick={openSlot} onSlotClear={clearSlot} />
+        <GearColumn slots={PET_RIGHT_SLOTS} values={values} icons={icons} tips={tips} onSlotClick={openSlot} onSlotClear={clearSlot} />
       </div>
 
       <div className="sub">Pet Spells</div>
