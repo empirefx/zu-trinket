@@ -34,7 +34,7 @@ export function BuildsBar() {
 
   useEffect(() => {
     const id = getSelectedId();
-    if (!id) return;
+    if (id === null) return;
     const b = listBuilds().find((x) => x.id === id);
     if (b) { apply(b.state); setSelectedId(b.id); }  // already stored — do not re-persist
     else persistSelectedId(null);
