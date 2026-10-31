@@ -11,8 +11,8 @@ import { iconClass, petIconClass } from "../../lib/icons";
 import { usePets } from "../../hooks/usePets";
 import { useBuild } from "./BuildContext";
 import { TITLES } from "./titles";
-import type { Item } from "../../lib/items";
-import { Description, Label, ListBox, Modal } from "@heroui/react";
+import type { EquipEntry, Item } from "../../lib/items";
+import { Button, Description, Label, ListBox, Modal } from "@heroui/react";
 
 const LEFT_SLOTS = [
   "Precious",
@@ -45,7 +45,8 @@ export function CharacterGear() {
   const pets = usePets();
   const [picking, setPicking] = useState<string | null>(null);
   const [petPicking, setPetPicking] = useState(false);
-  const [pending, setPending] = useState<{ slot: string; item: Item } | null>(null);
+  const [pending, setPending] = useState<{ slot: string; item: Item; entry?: EquipEntry } | null>(null);
+  const [pendingClear, setPendingClear] = useState<string | null>(null);
   const [titleModalOpen, setTitleModalOpen] = useState(false);
 
   const petSpecies = pets && pet ? pets.species.find((s) => s.id === pet.speciesId) : null;
@@ -54,7 +55,9 @@ export function CharacterGear() {
     Object.entries(gear).map(([s, e]) => [s, iconClass(e.item.icon) ?? ""]),
   );
   const openSlot = (slot: string) => {
-    if (SLOT_ITEMS[slot]) setPicking(slot);
+    const entry = gear[slot];
+    if (entry) setPending({ slot, item: entry.item, entry });
+    else if (SLOT_ITEMS[slot]) setPicking(slot);
   };
 
   return (
@@ -93,9 +96,21 @@ export function CharacterGear() {
       </div>
 
       <div className="gear">
-        <GearColumn slots={LEFT_SLOTS} values={values} icons={icons} onSlotClick={openSlot} />
+        <GearColumn
+          slots={LEFT_SLOTS}
+          values={values}
+          icons={icons}
+          onSlotClick={openSlot}
+          onSlotClear={(slot) => { if (gear[slot]) setPendingClear(slot); }}
+        />
         <GearViewer label="3D character" minHeight={340} />
-        <GearColumn slots={RIGHT_SLOTS} values={values} icons={icons} onSlotClick={openSlot}>
+        <GearColumn
+          slots={RIGHT_SLOTS}
+          values={values}
+          icons={icons}
+          onSlotClick={openSlot}
+          onSlotClear={(slot) => { if (gear[slot]) setPendingClear(slot); }}
+        >
           <GearSlot
             label="Pet"
             active={hasPet}
@@ -134,8 +149,10 @@ export function CharacterGear() {
       )}
       {pending && (
         <GearDrawer
+          key={`${pending.slot}:${pending.item.id}`}
           item={pending.item}
           appSlot={pending.slot}
+          initial={pending.entry}
           onCancel={() => setPending(null)}
           onAdd={(entry) => {
             setGear(pending.slot, entry);
@@ -143,6 +160,42 @@ export function CharacterGear() {
           }}
         />
       )}
+      <Modal
+        isOpen={pendingClear !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingClear(null);
+        }}
+      >
+        <Modal.Backdrop>
+          <Modal.Container>
+            <Modal.Dialog className="sm:max-w-[400px]">
+              <Modal.CloseTrigger />
+              <Modal.Header>
+                <Modal.Heading>
+                  {pendingClear ? `Remove "${gear[pendingClear].item.name}" from ${pendingClear}?` : ""}
+                </Modal.Heading>
+              </Modal.Header>
+              <Modal.Body>
+                <p>Its rank, enhance and toggle choices will be lost. You can equip it again from the picker.</p>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button variant="ghost" onPress={() => setPendingClear(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="danger"
+                  onPress={() => {
+                    setGear(pendingClear!, null);
+                    setPendingClear(null);
+                  }}
+                >
+                  Remove
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
       <Modal isOpen={titleModalOpen} onOpenChange={setTitleModalOpen}>
         <Modal.Backdrop>
           <Modal.Container>
