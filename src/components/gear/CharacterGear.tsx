@@ -5,8 +5,10 @@ import { GearViewer } from "./GearViewer";
 import { GearSlot } from "./GearSlot";
 import { GearPicker } from "./GearPicker";
 import { GearDrawer } from "./GearDrawer";
+import { PetPicker } from "./PetPicker";
 import { CLASS_NAMES, SLOT_ITEMS } from "./gearSlots";
-import { iconClass } from "../../lib/icons";
+import { iconClass, petIconClass } from "../../lib/icons";
+import { usePets } from "../../hooks/usePets";
 import { useBuild } from "./BuildContext";
 import { TITLES } from "./titles";
 import type { Item } from "../../lib/items";
@@ -39,11 +41,14 @@ const BOTTOM_SLOTS = [
 const TITLES_OPTIONS = [{ name: "None", effect: "" }, ...TITLES];
 
 export function CharacterGear() {
-  const { classId, level, title, hasPet, gear, setClassId, setLevel, setTitle, togglePet, setGear } = useBuild();
+  const { classId, level, title, hasPet, pet, gear, setClassId, setLevel, setTitle, setPet, clearPet, setGear } = useBuild();
+  const pets = usePets();
   const [picking, setPicking] = useState<string | null>(null);
+  const [petPicking, setPetPicking] = useState(false);
   const [pending, setPending] = useState<{ slot: string; item: Item } | null>(null);
   const [titleModalOpen, setTitleModalOpen] = useState(false);
 
+  const petSpecies = pets && pet ? pets.species.find((s) => s.id === pet.speciesId) : null;
   const values = Object.fromEntries(Object.entries(gear).map(([s, e]) => [s, e.item.name]));
   const icons = Object.fromEntries(
     Object.entries(gear).map(([s, e]) => [s, iconClass(e.item.icon) ?? ""]),
@@ -91,7 +96,13 @@ export function CharacterGear() {
         <GearColumn slots={LEFT_SLOTS} values={values} icons={icons} onSlotClick={openSlot} />
         <GearViewer label="3D character" minHeight={340} />
         <GearColumn slots={RIGHT_SLOTS} values={values} icons={icons} onSlotClick={openSlot}>
-          <GearSlot label="Pet" active={hasPet} onClick={togglePet} />
+          <GearSlot
+            label="Pet"
+            active={hasPet}
+            value={petSpecies?.name}
+            icon={petIconClass(petSpecies?.icon)}
+            onClick={() => setPetPicking(true)}
+          />
         </GearColumn>
       </div>
 
@@ -109,6 +120,16 @@ export function CharacterGear() {
             setPending({ slot: picking, item });
             setPicking(null);
           }}
+        />
+      )}
+      {petPicking && (
+        <PetPicker
+          onClose={() => setPetPicking(false)}
+          onPick={(speciesId) => {
+            setPet(speciesId, level);
+            setPetPicking(false);
+          }}
+          onClear={hasPet ? () => { clearPet(); setPetPicking(false); } : undefined}
         />
       )}
       {pending && (

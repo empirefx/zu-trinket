@@ -10,7 +10,7 @@ export function PetStats() {
   return (
     <Box title="Pet Stats" maxWidth="250px" className="stats" dimmed={!hasPet}>
       {stats.map((stat, i) => (
-        <StatRow key={i} label={stat.label} value={stat.value} isLast={i === 14} />
+        <StatRow key={i} label={stat.label} value={stat.value} isLast={i === stats.length - 1} />
       ))}
     </Box>
   );

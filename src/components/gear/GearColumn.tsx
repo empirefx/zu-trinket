@@ -7,12 +7,13 @@ interface GearColumnProps {
   // slot -> the css classes of the equipped item's icon
   icons?: Record<string, string>;
   onSlotClick?: (slot: string) => void;
+  onSlotClear?: (slot: string) => void;
   className?: string;
   size?: "normal" | "small";
   children?: ReactNode;
 }
 
-export function GearColumn({ slots, values, icons, onSlotClick, className = "", size = "normal", children }: GearColumnProps) {
+export function GearColumn({ slots, values, icons, onSlotClick, onSlotClear, className = "", size = "normal", children }: GearColumnProps) {
   return (
     <div className={`col ${className}`}>
       {slots.map((slot) => (
@@ -23,6 +24,7 @@ export function GearColumn({ slots, values, icons, onSlotClick, className = "", 
           value={values?.[slot]}
           icon={icons?.[slot]}
           onClick={onSlotClick ? () => onSlotClick(slot) : undefined}
+          onContextMenu={onSlotClear ? () => onSlotClear(slot) : undefined}
         />
       ))}
       {children}

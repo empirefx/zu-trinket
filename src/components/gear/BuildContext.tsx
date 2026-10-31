@@ -1,32 +1,62 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import type { EquipEntry } from "../../lib/items";
+import type { PetGearItem } from "../../lib/pets";
 
 type ClassId = "swordsman" | "sunwarrior" | "beadfairy" | "moonmaiden" | "summoner";
+
+// One pet spell slot: the spell kind + the displayed rank (0..9)
+export interface PetSpellAsg {
+  kind: number;
+  rank: number;
+}
+
+// The pet build: species + pet level + the 4 pet-gear slots (0 eyes, 1 inner
+// bolus, 2 feet accelerator, 3 saddle) + the 8 spell slots
+export interface PetBuild {
+  speciesId: number;
+  level: number;
+  gear: Record<number, PetGearItem>;
+  spells: Record<number, PetSpellAsg>;
+}
 
 interface BuildState {
   classId: ClassId;
   level: number;
   title: string;
-  hasPet: boolean;
   gear: Record<string, EquipEntry>;
   // the learned talent ranks: a talent node's id -> its learned rank
   talentRanks: Record<number, number>;
+  // the pet build; hasPet stays as the derived flag the boxes dim with
+  pet: PetBuild | null;
+  hasPet: boolean;
   setClassId: (id: ClassId) => void;
   setLevel: (level: number) => void;
   setTitle: (title: string) => void;
-  togglePet: () => void;
+  setPet: (speciesId: number, level: number) => void;
+  clearPet: () => void;
+  setPetGear: (slot: number, item: PetGearItem | null) => void;
+  setPetSpell: (slot: number, asg: PetSpellAsg | null) => void;
+  setPetLevel: (level: number) => void;
   setGear: (slot: string, entry: EquipEntry | null) => void;
-  // learn the next rank of a talent (one point)
-  learnTalent: (id: number) => void;
+  // change a talent's learned rank by one point (d = -1 lowers it)
+  learnTalent: (id: number, d?: 1 | -1) => void;
 }
 
 const BuildContext = createContext<BuildState | null>(null);
+
+// set/delete one key of a record without mutating (the setGear pattern)
+function upd<T>(rec: Record<number, T>, k: number, v: T | null) {
+  const next = { ...rec };
+  if (v) next[k] = v;
+  else delete next[k];
+  return next;
+}
 
 export function BuildProvider({ children }: { children: ReactNode }) {
   const [classId, setClassId] = useState<ClassId>("swordsman");
   const [level, setLevel] = useState(0);
   const [title, setTitle] = useState("None");
-  const [hasPet, setHasPet] = useState(false);
+  const [pet, setPetState] = useState<PetBuild | null>(null);
   const [gear, setGearState] = useState<Record<string, EquipEntry>>({});
   const [talentRanks, setTalentRanks] = useState<Record<number, number>>({});
 
@@ -36,13 +66,24 @@ export function BuildProvider({ children }: { children: ReactNode }) {
         classId,
         level,
         title,
-        hasPet,
         gear,
         talentRanks,
+        pet,
+        hasPet: pet !== null,
         setClassId,
         setLevel,
         setTitle,
-        togglePet: () => setHasPet((v) => !v),
+        setPet: (speciesId, level) => setPetState({
+          speciesId, level, gear: {},
+          spells: Object.fromEntries(Array.from({ length: 8 }, (_, i) => [i, { kind: i, rank: 0 }])),
+        }),
+        clearPet: () => setPetState(null),
+        setPetGear: (slot, item) =>
+          setPetState((p) => p && { ...p, gear: upd(p.gear, slot, item) }),
+        setPetSpell: (slot, asg) =>
+          setPetState((p) => p && { ...p, spells: upd(p.spells, slot, asg) }),
+        setPetLevel: (level) =>
+          setPetState((p) => p && { ...p, level: Math.max(0, Math.min(300, level)) }),
         setGear: (slot, entry) =>
           setGearState((g) => {
             const next = { ...g };
@@ -50,8 +91,8 @@ export function BuildProvider({ children }: { children: ReactNode }) {
             else delete next[slot];
             return next;
           }),
-        learnTalent: (id) =>
-          setTalentRanks((r) => ({ ...r, [id]: (r[id] ?? 0) + 1 })),
+        learnTalent: (id, d = 1) =>
+          setTalentRanks((r) => ({ ...r, [id]: Math.max(0, (r[id] ?? 0) + d) })),
       }}
     >
       {children}

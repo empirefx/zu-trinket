@@ -107,6 +107,10 @@ export function TalentTrees() {
                       tabIndex={0}
                       aria-label={`${node.name} - ${node.intro}`}
                       onClick={() => st.learnable && learnTalent(node.id)}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        if ((talentRanks[node.id] ?? 0) > 0) learnTalent(node.id, -1);
+                      }}
                       onKeyDown={(e) => {
                         if (st.learnable && (e.key === "Enter" || e.key === " ")) {
                           e.preventDefault();
@@ -115,11 +119,11 @@ export function TalentTrees() {
                       }}
                     >
                       <span className={"gear-icon zs " + (iconClass(node.icon) ?? "")} />
-                      {st.rank > 0 && <span className="talent-rank">{st.rank}</span>}
-                      <div className="talent-tip" role="tooltip">
+                      {st.rank > 0 && <span className="rank-badge">{st.rank}</span>}
+                      <div className="hover-tip" role="tooltip">
                         <b>{node.name}</b>
-                        <div className="talent-intro">{node.intro}</div>
-                        <div className="talent-meta">
+                        <div className="tip-body">{node.intro}</div>
+                        <div className="tip-meta">
                           {node.maxRank} rank{node.maxRank > 1 ? "s" : ""}
                           {node.pointNeed ? ` · band at ${node.pointNeed} points` : ""}
                         </div>

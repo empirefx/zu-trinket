@@ -168,6 +168,12 @@
   color: #e8c36a;
 }
 
+/* an assigned pet skill still at rank 0: greyed out until it is leveled */
+.gear-page .slot.dim .gear-icon,
+.gear-page .slot.dim .rank-badge {
+  opacity: 0.3;
+}
+
 .gear-page .slot.small {
   width: 44px;
   height: 44px;
@@ -671,8 +677,8 @@
   box-shadow: 0 0 6px rgba(232, 195, 106, 0.7);
 }
 
-/* the learned rank, like the game's own badge */
-.gear-page .talent-rank {
+/* the learned rank, like the game's own badge - talents and pet spells */
+.gear-page .rank-badge {
   position: absolute;
   right: -2px;
   bottom: -4px;
@@ -698,8 +704,9 @@
   height: 32px;
 }
 
-/* the talent tooltip: the name, the game's description and the node's cost */
-.gear-page .talent-tip {
+/* the shared hover tooltip: the name, the description and a meta line -
+   talents and pet spells both draw it */
+.gear-page .hover-tip {
   position: absolute;
   bottom: calc(100% + 6px);
   left: 50%;
@@ -725,21 +732,23 @@
   transition: opacity 120ms ease;
 }
 
-.gear-page .talent-node:hover .talent-tip,
-.gear-page .talent-node:focus-visible .talent-tip {
+.gear-page .talent-node:hover .hover-tip,
+.gear-page .talent-node:focus-visible .hover-tip,
+.gear-page .slot:hover .hover-tip,
+.gear-page .slot:focus-visible .hover-tip {
   opacity: 1;
   visibility: visible;
 }
 
-.gear-page .talent-tip b {
+.gear-page .hover-tip b {
   color: #e8c36a;
 }
 
-.gear-page .talent-intro {
+.gear-page .tip-body {
   margin-top: 2px;
 }
 
-.gear-page .talent-meta {
+.gear-page .tip-meta {
   color: #8b93a3;
   margin-top: 4px;
 }
@@ -748,3 +757,6 @@
   color: #d08b6a;
   margin-top: 4px;
 }
+
+/* slots are positioned so the corner badge and the hover tooltip anchor to them */
+.gear-page .slot { position: relative; }

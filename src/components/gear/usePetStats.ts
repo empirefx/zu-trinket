@@ -1,47 +1,42 @@
 import { useMemo } from "react";
 import { useBuild } from "./BuildContext";
+import { usePets } from "../../hooks/usePets";
+import { petStats } from "../../lib/pets";
 
-const LABELS = [
-  "Max HP Bonus", "Max MP Bonus", "Attack Bonus", "PD Bonus", "MD Bonus",
-  "Speed+", "Satiation", "Intimacy", "Health", "Life Aptitude",
-  "Mana Aptitude", "Attack Apt.", "PD Aptitude", "MD Aptitude", "Savvy",
-];
-
+// The Pet Stats rows: the est. owner bonuses (RACE group-7 curve at the pet
+// level scaled by aptitude/maxAptitude), Speed+ (server-side, always "—") and
+// the five aptitude rows "cur / max" (cur = the egg range's midpoint).
+// Satiation / Intimacy / Health were removed from the box (requirement).
 export function usePetStats() {
-  const { level, hasPet } = useBuild();
+  const { pet, hasPet } = useBuild();
+  const pets = usePets();
 
-  const stats = useMemo(() => {
-    if (!hasPet) return LABELS.map((label) => ({ label, value: "—" }));
-
-    // Pet stats scale with player level
-    const hpBonus = Math.floor(2284 * (level / 139));
-    const mpBonus = Math.floor(2441 * (level / 139));
-    const atkBonus = Math.floor(1079 * (level / 139));
-    const pdBonus = Math.floor(308 * (level / 139));
-    const mdBonus = Math.floor(411 * (level / 139));
-    const speed = parseFloat((93 * (level / 139)).toFixed(2));
-    const satiation = Math.min(1000, Math.floor(487 * (level / 139)));
-    const intimacy = Math.min(1000, Math.floor(840 * (level / 139)));
-    const health = Math.floor(6422 * (level / 139));
-
-    return [
-      { label: "Max HP Bonus", value: `+${hpBonus.toLocaleString()}` },
-      { label: "Max MP Bonus", value: `+${mpBonus.toLocaleString()}` },
-      { label: "Attack Bonus", value: `+${atkBonus.toLocaleString()}` },
-      { label: "PD Bonus", value: `+${pdBonus.toLocaleString()}` },
-      { label: "MD Bonus", value: `+${mdBonus.toLocaleString()}` },
-      { label: "Speed+", value: `+${speed.toFixed(2)}%` },
-      { label: "Satiation", value: `${satiation} / 1,000` },
-      { label: "Intimacy", value: `${intimacy} / 1,000` },
-      { label: "Health", value: health.toLocaleString() },
-      { label: "Life Aptitude", value: "2,300 / 2,500" },
-      { label: "Mana Aptitude", value: "2,300 / 2,500" },
-      { label: "Attack Apt.", value: "2,300 / 2,500" },
-      { label: "PD Aptitude", value: "2,300 / 2,500" },
-      { label: "MD Aptitude", value: "2,300 / 2,500" },
-      { label: "Savvy", value: "8" },
+  return useMemo(() => {
+    const BONUS_ROWS = [
+      ["Max HP Bonus", "hpBonus"],
+      ["Max MP Bonus", "mpBonus"],
+      ["Attack Bonus", "atkBonus"],
+      ["PD Bonus", "pdBonus"],
+      ["MD Bonus", "mdBonus"],
+    ] as const;
+    const APT_ROWS = [
+      "Life Aptitude", "Mana Aptitude", "Attack Apt.", "PD Aptitude", "MD Aptitude",
     ];
-  }, [level, hasPet]);
+    const dash = [...BONUS_ROWS.map(([l]) => ({ label: l, value: "—" })),
+      { label: "Speed+", value: "—" },
+      ...APT_ROWS.map((label) => ({ label, value: "—" }))];
 
-  return stats;
+    if (!hasPet || !pets || !pet) return dash;
+
+    const species = pets.species.find((s) => s.id === pet.speciesId);
+    const st = petStats(pet.level, species?.apt ?? null, pets.curve);
+    return [
+      ...BONUS_ROWS.map(([label, key]) => ({ label: `${label} (est.)`, value: st[key]?.toLocaleString() ?? "—" })),
+      { label: "Speed+", value: "—" }, // the curve's MoveSpeed is a constant; the real bonus is server-side
+      ...APT_ROWS.map((label) => ({
+        label: `${label} (est.)`,
+        value: st.apt ? `${st.apt[0].toLocaleString()} / ${st.apt[1].toLocaleString()}` : "—",
+      })),
+    ];
+  }, [pet, hasPet, pets]);
 }
