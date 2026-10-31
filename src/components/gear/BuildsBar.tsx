@@ -3,6 +3,7 @@ import { Button, Modal, Tooltip } from "@heroui/react";
 import { useBuild } from "./BuildContext";
 import { CLASS_NAMES } from "./gearSlots";
 import {
+  type BuildSnapshot,
   deleteBuild,
   listBuilds,
   MAX_BUILDS,
@@ -15,6 +16,12 @@ export function BuildsBar() {
   const [builds, setBuilds] = useState<SavedBuild[]>(() => listBuilds());
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<SavedBuild | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+
+  const apply = (s: BuildSnapshot) =>
+    applyBuild(
+      s.pet ? { ...s, pet: { ...s.pet, gear: s.pet.gear ?? {}, spells: s.pet.spells ?? {} } } : s,
+    );
 
   useEffect(() => {
     document
@@ -25,22 +32,31 @@ export function BuildsBar() {
   const atCap = builds.length >= MAX_BUILDS;
 
   const handleNew = () => {
+    if (atCap) return;
     const saved = saveBuild("Build " + (builds.length + 1), snapshot());
     if (saved) {
       setBuilds(listBuilds());
       setSelectedId(saved.id);
+      setStatus(null);
+    } else {
+      setStatus("Could not save — storage unavailable");
     }
   };
 
   const confirmDelete = () => {
     if (!pendingDelete) return;
     const idx = builds.findIndex((b) => b.id === pendingDelete.id);
-    deleteBuild(pendingDelete.id);
+    if (!deleteBuild(pendingDelete.id)) {
+      setStatus("Could not delete — storage unavailable");
+      setPendingDelete(null);
+      return;
+    }
+    setStatus(null);
     setBuilds(listBuilds());
     if (pendingDelete.id === selectedId) {
       const prev = builds[idx - 1] ?? null;
       setSelectedId(prev ? prev.id : null);
-      if (prev) applyBuild(prev.state);
+      if (prev) apply(prev.state);
     }
     setPendingDelete(null);
   };
@@ -64,6 +80,11 @@ export function BuildsBar() {
         <span className="builds__count">
           {builds.length} / {MAX_BUILDS}
         </span>
+        {status && (
+          <span className="builds__status" role="status">
+            {status}
+          </span>
+        )}
       </header>
 
       {builds.length === 0 ? (
@@ -87,16 +108,14 @@ export function BuildsBar() {
                   type="button"
                   className="build__select"
                   onClick={() => {
-                    applyBuild(b.state);
+                    apply(b.state);
                     setSelectedId(b.id);
+                    setStatus(null);
                   }}
                 >
-                  <Tooltip>
-                    <Tooltip.Trigger className="build__name" title={b.name}>
-                      <span className="build__name">{b.name}</span>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>{b.name}</Tooltip.Content>
-                  </Tooltip>
+                  <span className="build__name" title={b.name}>
+                    {b.name}
+                  </span>
                   <span className="build__meta">
                     {CLASS_NAMES[cls] ?? cls} · Lv {lvl}
                   </span>
