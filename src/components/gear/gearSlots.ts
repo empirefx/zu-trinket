@@ -178,10 +178,10 @@ export function gearTotals(gear: Record<string, EquipEntry>, star: StarCurves = 
     const m = 1 + enhancePct(star, e.item.starGroup, e.enhance) / 100;
     const rk = e.item.ranks[Math.min(e.rank, e.item.ranks.length - 1)];
     const [a, b, p, g] = rk ?? [e.item.atkMin, e.item.atkMax, e.item.phys, e.item.mag];
-    t.atkMin += (a ?? 0) * m;
-    t.atkMax += (b ?? 0) * m;
-    t.phys += (p ?? 0) * m;
-    t.mag += (g ?? 0) * m;
+    t.atkMin += (a ?? 0) * m + darksteelBonus(a, e.darksteel?.dmg);
+    t.atkMax += (b ?? 0) * m + darksteelBonus(b, e.darksteel?.dmg);
+    t.phys += (p ?? 0) * m + darksteelBonus(p, e.darksteel?.pd);
+    t.mag += (g ?? 0) * m + darksteelBonus(g, e.darksteel?.md);
   }
   return t;
 }
