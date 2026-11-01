@@ -1,9 +1,9 @@
 import { useStar, useSets } from "../../hooks/useItems";
 import { useBuild } from "./BuildContext";
-import { elementNumbers, CLASS_NAMES } from "./gearSlots";
+import { elementNumbers, CLASS_NAMES, darksteelBonus, TIER_LABEL } from "./gearSlots";
 import { ATTR_INFO } from "./attrData";
 import { ELEMENT_WHEEL, ELEMENT_BIT } from "./elementWheel";
-import { enhancePct, type EquipEntry } from "../../lib/items";
+import { enhancePct, type EquipEntry, type DarksteelTier } from "../../lib/items";
 import { glyph, glyphColor, ATTR_KEY } from "./GearDrawer";
 
 const ELEMENTS: [string, number][] = [
@@ -34,6 +34,13 @@ export function GearTooltip({ entry }: { entry: EquipEntry }) {
   const { item, enhance } = entry;
 
   const rank = Math.min(entry.rank, Math.max((item.ranks?.length ?? 1) - 1, 0));
+  const rk = item.ranks[rank] ?? [item.atkMin, item.atkMax, item.phys, item.mag];
+  const hasAttack = !!(rk[0] || rk[1]);   // mirror of the drawer's branch
+  const ds = entry.darksteel ?? {};
+  const enhEnd = (v: number | null, t?: DarksteelTier) =>
+    v === null ? "—" : String(Math.floor(v * enhFactor) + darksteelBonus(v, t));
+  const bonusEnd = (v: number | null, t?: DarksteelTier) =>
+    v === null ? "—" : String(darksteelBonus(v, t));
   const maxEnh = star?.[String(item.starGroup)] ? star[String(item.starGroup)].length - 1 : 30;
   // the band of the LAST earned glyph — keying off `enhance` itself left the
   // range empty at exactly 10/20 (ten stars or ten moons rendered nothing)
@@ -78,6 +85,27 @@ export function GearTooltip({ entry }: { entry: EquipEntry }) {
         </p>
       )}
       <p>{rank} rank</p>
+      {hasAttack ? (
+        ds.dmg ? (
+          <p className="g">
+            {TIER_LABEL[ds.dmg]} Damage: {enhEnd(rk[0], ds.dmg)}~{enhEnd(rk[1], ds.dmg)}(+{bonusEnd(rk[0], ds.dmg)}~{bonusEnd(rk[1], ds.dmg)})
+          </p>
+        ) : (
+          <p>Damage: {enhEnd(rk[0])}~{enhEnd(rk[1])}</p>
+        )
+      ) : (
+        (["pd", "md"] as const).map((k, i) => {
+          const t = ds[k];
+          const v = rk[2 + i];
+          return t ? (
+            <p key={k} className="g">
+              {TIER_LABEL[t]} {k.toUpperCase()}: {enhEnd(v, t)}(+{bonusEnd(v, t)})
+            </p>
+          ) : (
+            <p key={k}>{k.toUpperCase()}: {enhEnd(v)}</p>
+          );
+        })
+      )}
       {req > 0 && (
         <p>{`Required Level: ${req} \u00a0\u00a0 Clan: ${CLASS_NAMES[item.class] ?? item.class}`}</p>
       )}
