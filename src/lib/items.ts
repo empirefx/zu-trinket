@@ -57,6 +57,12 @@ export type GearSet = {
   bonuses: Record<string, string>;
 };
 
+// Darksteel quality tiers, as the game composes them server-side (lowercase
+// ids; TIER_LABEL in gearSlots.ts holds the display words).
+export type DarksteelTier = "fine" | "well" | "perfect";
+// Which stat a darksteel tier sits on: damage, physical defence, magic defence.
+export type DarksteelKey = "dmg" | "pd" | "md";
+
 // One config per equipped item. enhance/rank are the 0-30 strips in the drawer.
 // attrs/elements are the toggled-on potential attributes / five elements - a
 // reference choice only (values aren't stored, so nothing sums them yet).
@@ -66,6 +72,9 @@ export type EquipEntry = {
   rank: number;
   attrs?: string[];
   elements?: string[];
+  // Darksteel Stone quality per stat (server-rolled in game; here the tool's
+  // percentage estimate — zu-re/docs/darksteel.md). absent = no darksteel.
+  darksteel?: Partial<Record<DarksteelKey, DarksteelTier>>;
 };
 
 // Enhance curve per STAR group: cumulative bonus % for level 0..N (from STAR.bin).

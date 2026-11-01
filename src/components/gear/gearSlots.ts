@@ -1,4 +1,4 @@
-import type { EquipEntry, Item, StarCurves } from "../../lib/items";
+import type { DarksteelTier, EquipEntry, Item, StarCurves } from "../../lib/items";
 import { enhancePct } from "../../lib/items";
 import { ELEMENT_BIT, ELEMENT_SETS, ELEMENT_WHEEL } from "./elementWheel";
 
@@ -138,6 +138,36 @@ export function elementNumbers(
     if (activeMask & ELEMENT_BIT[w.neg]) swings.push(`<${w.neg}-${half}>`);
   }
   return { mult, value, swings };
+}
+
+// Darksteel bonus as a fraction of the rank stat: Perfect = 2.621, anchored
+// to the skeleton dump (floor(115 × 2.621) = 301); Fine/Well are ⅓/⅔
+// placeholders until a dump pins them (zu-re/docs/darksteel.md).
+export const DARKSTEEL_PCT: Record<DarksteelTier, number> = {
+  fine: 2.621 / 3,
+  well: 2.621 * 2 / 3,
+  perfect: 2.621,
+};
+
+// Display words for the tier ids (the game composes them server-side).
+export const TIER_LABEL: Record<DarksteelTier, string> = {
+  fine: "Fine",
+  well: "Well",
+  perfect: "Perfect",
+};
+
+// The darksteel bonus on a rank stat: flat, floored, 0 with no tier or a
+// null stat — callers add it after the enhance multiply, never inside it.
+export function darksteelBonus(base: number | null, tier: DarksteelTier | undefined): number {
+  return tier === undefined || base === null ? 0 : Math.floor(base * DARKSTEEL_PCT[tier]);
+}
+
+// The drawer's click cycle: off → Fine → Well → Perfect → off.
+export function nextDarksteelTier(cur: DarksteelTier | undefined): DarksteelTier | undefined {
+  if (cur === undefined) return "fine";
+  if (cur === "fine") return "well";
+  if (cur === "well") return "perfect";
+  return undefined;
 }
 
 // Sum of what every equipped item contributes to the player's sheet.
