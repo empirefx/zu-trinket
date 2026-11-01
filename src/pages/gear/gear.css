@@ -934,9 +934,9 @@
   max-width: none;
 }
 .gear-page .item-tip {
-  width: 360px;
   padding: 12px;
-  background: #000;
+  background: #000000de;
+  border-radius: 4px;
   color: #fff;
   font: 12px/1.45 Tahoma, Verdana, sans-serif;
 }

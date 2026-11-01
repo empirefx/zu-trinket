@@ -35,7 +35,9 @@ export function GearTooltip({ entry }: { entry: EquipEntry }) {
 
   const rank = Math.min(entry.rank, Math.max((item.ranks?.length ?? 1) - 1, 0));
   const maxEnh = star?.[String(item.starGroup)] ? star[String(item.starGroup)].length - 1 : 30;
-  const bandStart = enhance < 10 ? 0 : enhance < 20 ? 10 : 20;
+  // the band of the LAST earned glyph — keying off `enhance` itself left the
+  // range empty at exactly 10/20 (ten stars or ten moons rendered nothing)
+  const bandStart = enhance - 1 < 10 ? 0 : enhance - 1 < 20 ? 10 : 20;
   const bandEnd = Math.min(enhance, maxEnh + 1);
   const req = item.reqLevels?.[rank] ?? item.reqLevel;
 
