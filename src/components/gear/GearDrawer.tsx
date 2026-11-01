@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { pretty, SLOT_REFINE, REFINE_SET, elementNumbers } from "./gearSlots";
+import { pretty, SLOT_REFINE, REFINE_SET, elementNumbers, darksteelBonus, nextDarksteelTier, TIER_LABEL } from "./gearSlots";
 import { REFINE_ATTRS } from "./refineData";
 import { ATTR_INFO } from "./attrData";
 import { ELEMENT_BIT, ELEMENT_WHEEL } from "./elementWheel";
@@ -7,7 +7,7 @@ import { useBuild } from "./BuildContext";
 import { useStar, useSets } from "../../hooks/useItems";
 import { enhancePct } from "../../lib/items";
 import { iconClass } from "../../lib/icons";
-import type { EquipEntry, Item } from "../../lib/items";
+import type { DarksteelKey, DarksteelTier, EquipEntry, Item } from "../../lib/items";
 
 // Enhance is driven by STAR.bin (item.starGroup -> cumulative bonus % curve), so
 // the strip stops at the group's max level. REFINE_ATTRS lists the potential
@@ -18,8 +18,10 @@ import type { EquipEntry, Item } from "../../lib/items";
 export const glyph = (i: number) => (i < 10 ? "★" : i < 20 ? "☾" : "☀");
 export const glyphColor = (i: number) => (i < 10 ? "#e8c36a" : i < 20 ? "#9ecbff" : "#ffd36e");
 
-const num = (v: number | null) => (v === null ? "—" : String(v));
-const range = (a: number | null, b: number | null) => `${num(a)} ~ ${num(b)}`;
+// base row: rank stat + flat bonus; enhance row: floored enhanced stat + flat bonus
+const dsEnd = (v: number | null, t?: DarksteelTier) => (v === null ? "—" : String(v + darksteelBonus(v, t)));
+const dsScaled = (v: number | null, t?: DarksteelTier, enh = 1) =>
+  v === null ? "—" : String(Math.floor(v * enh) + darksteelBonus(v, t));
 
 // "3 suns" = enhance level 21..30 (the strip is 10 stars, 10 moons, 10 suns)
 const shownEnhLabel = (lvl: number) =>
@@ -53,6 +55,9 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd, initial }: GearDraw
   // (element stones), it is NOT in the tables - the values are.
   const [onElem, setOnElem] = useState<Set<string>>(new Set(initial?.elements ?? []));
   const [hover, setHover] = useState<{ n: number; v: number } | null>(null);
+  const [ds, setDs] = useState<Partial<Record<DarksteelKey, DarksteelTier>>>(initial?.darksteel ?? {});
+  const rotate = (key: DarksteelKey) => setDs((d) => ({ ...d, [key]: nextDarksteelTier(d[key]) }));
+  const anyDs = !!(ds.dmg || ds.pd || ds.md);
   const star = useStar();
   const sets = useSets();
   const { gear } = useBuild();
@@ -75,30 +80,42 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd, initial }: GearDraw
   // value is shown.  0 means the game does not write one down.
   const reqLevel =
     item.reqLevels?.[Math.min(rank, (item.reqLevels?.length ?? 1) - 1)] || item.reqLevel;
-  const base: [string, string][] = [
-    ["Gear level", String(item.tier)],
-    ["Required Level", reqLevel ? String(reqLevel) : "—"],
+  const base: { k: string; v: string; dsKey?: DarksteelKey }[] = [
+    { k: "Gear level", v: String(item.tier) },
+    { k: "Required Level", v: reqLevel ? String(reqLevel) : "—" },
   ];
   // The crafting recipe has a level of its own (SPELLSEX) - only the
   // craftable grades have one, and it is not the same number.
   if (item.craftLevel) {
-    base.push(["Craft Level", String(item.craftLevel)]);
+    base.push({ k: "Craft Level", v: String(item.craftLevel) });
   }
-  if (hasAttack) base.push(["Attack", range(rAtkMin, rAtkMax)]);
-  else {
-    base.push(["Phys Def", num(rPhys)]);
-    base.push(["Mag Def", num(rMag)]);
+  if (hasAttack) {
+    base.push({
+      k: "Attack",
+      v: `${dsEnd(rAtkMin, ds.dmg)} ~ ${dsEnd(rAtkMax, ds.dmg)}${ds.dmg ? ` (${TIER_LABEL[ds.dmg]})` : ""}`,
+      dsKey: "dmg",
+    });
+  } else {
+    base.push({
+      k: "Phys Def",
+      v: dsEnd(rPhys, ds.pd) + (ds.pd ? ` (${TIER_LABEL[ds.pd]})` : ""),
+      dsKey: "pd",
+    });
+    base.push({
+      k: "Mag Def",
+      v: dsEnd(rMag, ds.md) + (ds.md ? ` (${TIER_LABEL[ds.md]})` : ""),
+      dsKey: "md",
+    });
   }
   // the enhance curve (STAR.bin) scales the stats, same as the element values
   const enhPctNow = enhancePct(star ?? {}, item.starGroup, enh);
   if (enhPctNow > 0) {
-    const scale = (v: number | null) => (v === null ? "—" : String(Math.floor(v * enhFactor)));
-    base.push([
-      `At ${shownEnhLabel(enh)} enhance`,
-      hasAttack
-        ? `${scale(rAtkMin)} ~ ${scale(rAtkMax)}`
-        : `${scale(rPhys)} / ${scale(rMag)}`,
-    ]);
+    base.push({
+      k: `At ${shownEnhLabel(enh)} enhance`,
+      v: hasAttack
+        ? `${dsScaled(rAtkMin, ds.dmg, enhFactor)} ~ ${dsScaled(rAtkMax, ds.dmg, enhFactor)}`
+        : `${dsScaled(rPhys, ds.pd, enhFactor)} / ${dsScaled(rMag, ds.md, enhFactor)}`,
+    });
   }
   const refineSlot = SLOT_REFINE[appSlot] ?? 0;
   const attrs = REFINE_ATTRS[String(refineSlot)] ?? [];
@@ -142,10 +159,16 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd, initial }: GearDraw
         </div>
 
         <div className="drawer-body">
-          <div className="sec">Base stats</div>
+          <div className="sec">
+            Base stats <span className="sec-hint">{anyDs ? "(est.)" : "(click a stat)"}</span>
+          </div>
           <div className="statgrid">
-            {base.map(([k, v]) => (
-              <div key={k}>
+            {base.map(({ k, v, dsKey }) => (
+              <div
+                key={k}
+                className={dsKey ? "ds" : undefined}
+                onClick={dsKey ? () => rotate(dsKey) : undefined}
+              >
                 <span className="k">{k}</span>
                 <span>{v}</span>
               </div>
@@ -278,7 +301,7 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd, initial }: GearDraw
           <button
             className="btn primary"
             onClick={() =>
-              onAdd({ item, enhance: enh, rank, attrs: [...on], elements: [...onElem] })
+              onAdd({ item, enhance: enh, rank, attrs: [...on], elements: [...onElem], darksteel: anyDs ? { ...ds } : undefined })
             }
           >
             Add

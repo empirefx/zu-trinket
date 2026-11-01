@@ -405,6 +405,8 @@
   color: #8b93a3;
 }
 
+.gear-page .statgrid .ds { cursor: pointer; }
+
 .gear-page .attrlist {
   display: flex;
   flex-direction: column;
