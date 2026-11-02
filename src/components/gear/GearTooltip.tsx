@@ -1,9 +1,9 @@
 import { useStar, useSets } from "../../hooks/useItems";
 import { useBuild } from "./BuildContext";
-import { elementNumbers, CLASS_NAMES, darksteelBonus, TIER_LABEL } from "./gearSlots";
+import { elementNumbers, CLASS_NAMES, TIER_LABEL, statLineText, damageLineText } from "./gearSlots";
 import { ATTR_INFO } from "./attrData";
 import { ELEMENT_WHEEL, ELEMENT_BIT } from "./elementWheel";
-import { enhancePct, type EquipEntry, type DarksteelTier } from "../../lib/items";
+import { enhancePct, type EquipEntry } from "../../lib/items";
 import { glyph, glyphColor, ATTR_KEY } from "./GearDrawer";
 
 const ELEMENTS: [string, number][] = [
@@ -37,10 +37,6 @@ export function GearTooltip({ entry }: { entry: EquipEntry }) {
   const rk = item.ranks[rank] ?? [item.atkMin, item.atkMax, item.phys, item.mag];
   const hasAttack = !!(rk[0] || rk[1]);   // mirror of the drawer's branch
   const ds = entry.darksteel ?? {};
-  const enhEnd = (v: number | null, t?: DarksteelTier) =>
-    v === null ? "—" : String(Math.floor(v * enhFactor) + darksteelBonus(v, t));
-  const bonusEnd = (v: number | null, t?: DarksteelTier) =>
-    v === null ? "—" : String(darksteelBonus(v, t));
   const maxEnh = star?.[String(item.starGroup)] ? star[String(item.starGroup)].length - 1 : 30;
   // the band of the LAST earned glyph — keying off `enhance` itself left the
   // range empty at exactly 10/20 (ten stars or ten moons rendered nothing)
@@ -50,7 +46,8 @@ export function GearTooltip({ entry }: { entry: EquipEntry }) {
 
   const activeElems = entry.elements ?? [];
   const activeMask = ELEMENTS.reduce((m, [k, bit]) => m | (activeElems.includes(k) ? bit : 0), 0);
-  const enhFactor = 1 + enhancePct(star ?? {}, item.starGroup, enhance) / 100;
+  // raw enhance curve fraction (0.112 = +11.2 %); 0 under SSR (star not loaded)
+  const enchantFrac = enhancePct(star ?? {}, item.starGroup, enhance);
 
   const set = sets && item.setId ? sets[String(item.setId)] : undefined;
   const setKeys = set ? Object.keys(set.bonuses).map(Number).sort((a, b) => a - b) : [];
@@ -86,23 +83,19 @@ export function GearTooltip({ entry }: { entry: EquipEntry }) {
       )}
       <p>{rank} rank</p>
       {hasAttack ? (
-        ds.dmg ? (
-          <p className="g">
-            {TIER_LABEL[ds.dmg]} Damage: {enhEnd(rk[0], ds.dmg)}~{enhEnd(rk[1], ds.dmg)}(+{bonusEnd(rk[0], ds.dmg)}~{bonusEnd(rk[1], ds.dmg)})
-          </p>
+        rk[0] === null || rk[1] === null ? (
+          <p className="g">{TIER_LABEL[ds.dmg ?? "fine"]} Damage: {rk[0] ?? "—"}~{rk[1] ?? "—"}</p>
         ) : (
-          <p>Damage: {enhEnd(rk[0])}~{enhEnd(rk[1])}</p>
+          <p className="g">{damageLineText(rk[0], rk[1], enchantFrac, ds.dmg)}</p>
         )
       ) : (
         (["pd", "md"] as const).map((k, i) => {
           const t = ds[k];
           const v = rk[2 + i];
-          return t ? (
-            <p key={k} className="g">
-              {TIER_LABEL[t]} {k.toUpperCase()}: {enhEnd(v, t)}(+{bonusEnd(v, t)})
-            </p>
+          return v === null ? (
+            <p key={k}>{k.toUpperCase()}: —</p>
           ) : (
-            <p key={k}>{k.toUpperCase()}: {enhEnd(v)}</p>
+            <p key={k} className="g">{statLineText(v, enchantFrac, t, k.toUpperCase())}</p>
           );
         })
       )}
