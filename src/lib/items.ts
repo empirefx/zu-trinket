@@ -77,7 +77,7 @@ export type EquipEntry = {
   darksteel?: Partial<Record<DarksteelKey, DarksteelTier>>;
 };
 
-// Enhance curve per STAR group: cumulative bonus % for level 0..N (from STAR.bin).
+// Enhance curve per STAR group: cumulative bonus fraction for level 0..N (from STAR.bin).
 export type StarCurves = Record<string, number[]>;
 
 // items.json is 4.9 MB and only the picker needs it, so fetch it once on

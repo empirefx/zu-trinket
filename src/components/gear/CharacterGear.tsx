@@ -181,7 +181,7 @@ export function CharacterGear() {
                 </Modal.Heading>
               </Modal.Header>
               <Modal.Body>
-                <p>Its rank, enhance and toggle choices will be lost. You can equip it again from the picker.</p>
+                <p>Its rank, enchant and toggle choices will be lost. You can equip it again from the picker.</p>
               </Modal.Body>
               <Modal.Footer>
                 <Button variant="ghost" onPress={() => setPendingClear(null)}>

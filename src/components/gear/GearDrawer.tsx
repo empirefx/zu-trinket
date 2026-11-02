@@ -9,7 +9,7 @@ import { enhancePct } from "../../lib/items";
 import { iconClass } from "../../lib/icons";
 import type { DarksteelKey, DarksteelTier, EquipEntry, Item } from "../../lib/items";
 
-// Enchant is driven by STAR.bin (item.starGroup -> cumulative bonus % curve), so
+// Enchant is driven by STAR.bin (item.starGroup -> cumulative bonus fraction curve), so
 // the strip stops at the group's max level. REFINE_ATTRS lists the potential
 // attributes this slot can roll (from REFINE.ZU1). ponytail: the item's own
 // element mask / potential value / attribute +N values aren't stored in the
