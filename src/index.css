@@ -93,6 +93,19 @@ body {
   box-shadow: 0 0 0 2px #fbbf24, 0 0 8px 1px rgba(251, 191, 36, 0.55);
 }
 
+/* the jump tooltip: dark to match the theme */
+.map-tooltip {
+  background: rgba(24, 27, 32, 0.95);
+  color: var(--foreground);
+  border: 1px solid var(--divider);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+  padding: 5px 8px;
+}
+.leaflet-tooltip-top.map-tooltip::before {
+  border-top-color: rgba(24, 27, 32, 0.95);
+}
+
 /* category-panel tabs use them at 24px */
 #category-panel .cat-icon {
   width: 24px;

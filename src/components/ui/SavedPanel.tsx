@@ -46,7 +46,9 @@ export function SavedPanel({ data, meta, points, saved, viewport, onClick }: Sav
                     return (
                       <span
                         key={p.id}
-                        className={`cat-icon cat-${p.cat}`}
+                        className={`cat-icon cat-${p.cat} cursor-pointer`}
+                        title="show on map"
+                        onClick={() => onClick(p)}
                         style={{
                           position: "absolute",
                           left: `${(px / t.w) * 100}%`,

@@ -29,6 +29,8 @@ export default function MapView({
   const map = useRef<L.Map | null>(null);
   const overlay = useRef<L.ImageOverlay | null>(null);
   const markers = useRef<L.LayerGroup | null>(null);
+  // marker objects by point id, so a focus jump can open its tooltip
+  const byId = useRef(new Map<number, L.Marker>());
   // The game reports the cursor in *map units*: the longer axis of the world
   // rect is 1000 units, so cursor = (world - rect.min) * 1000 / max(size).
   // The map pixel is px = a * (gx - rect.minX), hence the factor below.
@@ -117,6 +119,7 @@ export default function MapView({
     const g = markers.current;
     if (!g) return;
     g.clearLayers();
+    byId.current.clear();
     const t = transform[meta.slug];
     if (!t) return;
     for (const p of points) {
@@ -126,7 +129,7 @@ export default function MapView({
       // off this map's image. tiny epsilon for float edge cases.
       if (px < -1 || py < -1 || px > t.w + 1 || py > t.h + 1) continue;
       const c = catColor(p.cat);
-      L.marker([py, px], {
+      const mk = L.marker([py, px], {
         icon: L.divIcon({
           // the CatPanel mask icons, in the category color; className "" drops
           // Leaflet's default white box around div icons; a pinned marker
@@ -139,13 +142,15 @@ export default function MapView({
           iconAnchor: [10, 10],
         }),
       })
-        .bindTooltip(
-          `<b>${escapeHtml(p.name)}</b><br/>${p.gx.toFixed(0)}, ${p.gy.toFixed(0)}, ${p.gz.toFixed(0)}`,
-          { direction: "top", offset: [0, -10] },
-        )
+        .bindTooltip(`<b>${escapeHtml(p.name)}</b>`, {
+          direction: "top",
+          offset: [0, -10],
+          className: "map-tooltip",
+        })
         // click pins/unpins the point in the saved list
-        .on("click", () => onToggleSaved(p.id))
-        .addTo(g);
+        .on("click", () => onToggleSaved(p.id)) as L.Marker;
+      mk.addTo(g);
+      byId.current.set(p.id, mk);
     }
   }, [meta.slug, transform, points, visible, saved, onToggleSaved]);
 
@@ -158,6 +163,8 @@ export default function MapView({
     if (!t || !p) return;
     const [px, py] = toPixel(t, p.gx, p.gz);
     m.setView([py, px], Math.max(m.getZoom(), 1));
+    // the jump target gets its tooltip so you see what you landed on
+    byId.current.get(focus.id)?.openTooltip();
   }, [focus, points, transform, meta.slug]);
 
   return <div ref={el} className="absolute inset-0 bg-[#020617]" />;
