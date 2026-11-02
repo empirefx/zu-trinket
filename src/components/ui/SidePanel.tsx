@@ -3,10 +3,12 @@ import { Card, CardContent, Input } from "@heroui/react";
 import { type Data, type MapMeta, type Point } from "../../lib/data";
 import { toPixel } from "../../lib/data";
 
-type ListTab = "search" | "npc" | "monster";
+type ListTab = "map" | "search" | "npc" | "monster";
 
-interface SearchPanelProps {
+interface SidePanelProps {
   data: Data;
+  slug: string;
+  onMapSelect: (slug: string) => void;
   meta?: MapMeta;
   points: Point[];
   mquery: string;
@@ -31,13 +33,16 @@ function knownLevel(p: Point): number | null {
 }
 
 const TABS: { key: ListTab; label: string }[] = [
-  { key: "search", label: "Search" },
+  { key: "map", label: "Map" },
   { key: "npc", label: "NPC" },
   { key: "monster", label: "Monster" },
+  { key: "search", label: "Search" },
 ];
 
-export function SearchPanel({
+export function SidePanel({
   data,
+  slug,
+  onMapSelect,
   meta,
   points,
   mquery,
@@ -46,8 +51,8 @@ export function SearchPanel({
   handleResultClick,
   mapName,
   children,
-}: SearchPanelProps) {
-  const [tab, setTab] = useState<ListTab>("search");
+}: SidePanelProps) {
+  const [tab, setTab] = useState<ListTab>("map");
   const [selected, setSelected] = useState<number | null>(null);
 
   const npcs = points.filter((p) => p.cat === "npc").sort((a, b) => a.name.localeCompare(b.name));
@@ -55,11 +60,11 @@ export function SearchPanel({
   const list = tab === "npc" ? npcs : tab === "monster" ? mobs : [];
 
   return (
-    <div id="search-panel" className="absolute top-14 right-3 z-50 w-[450px]" data-testid="search-panel">
+    <div id="side-panel" className="absolute top-14 right-3 z-50 w-[450px]" data-testid="side-panel">
       <Card className="w-full bg-default/90 backdrop-blur-sm border-divider">
         <CardContent className="p-1.5 space-y-1">
           {children && (
-            <div className="border-b border-divider pb-1.5 mb-1" data-testid="search-panel-top">
+            <div className="border-b border-divider pb-1.5 mb-1" data-testid="side-panel-top">
               {children}
             </div>
           )}
@@ -69,7 +74,7 @@ export function SearchPanel({
                 key={t.key}
                 role="tab"
                 aria-selected={tab === t.key}
-                data-testid={`search-tab-${t.key}`}
+                data-testid={`side-tab-${t.key}`}
                 className={`px-2 py-1 text-xs font-medium rounded cursor-pointer select-none ${
                   tab === t.key
                     ? "bg-white/10 text-foreground"
@@ -81,7 +86,43 @@ export function SearchPanel({
               </div>
             ))}
           </div>
-          {tab === "search" ? (
+          {tab === "map" ? (
+            <div
+              className="max-h-[480px] overflow-y-auto border-t border-divider pt-1"
+              style={{ scrollbarWidth: "thin" }}
+              data-testid="side-map-list"
+            >
+              {data.maps.map((m) => (
+                <div
+                  key={m.slug}
+                  role="button"
+                  tabIndex={0}
+                  className={`w-full text-left px-1.5 py-1 rounded-none text-xs transition-colors cursor-pointer ${
+                    m.slug === slug
+                      ? "bg-black/40 text-primary font-medium"
+                      : "text-foreground hover:bg-default/50"
+                  }`}
+                  onClick={() => onMapSelect(m.slug)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onMapSelect(m.slug);
+                    }
+                  }}
+                  title={m.slug}
+                  data-testid="side-map-item"
+                  data-slug={m.slug}
+                >
+                  <div className="flex items-center justify-between gap-1.5">
+                    <span className="truncate">{m.name}</span>
+                    {!data.transform[m.slug] && (
+                      <span className="text-[10px] text-warning shrink-0">no data</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : tab === "search" ? (
             <>
               <Input
                 id="marker-search"
@@ -108,7 +149,7 @@ export function SearchPanel({
                           setSelected(p.id);
                           handleResultClick(p);
                         }}
-                        data-testid="search-result"
+                        data-testid="side-search-result"
                         data-id={p.id}
                       >
                         <div className="font-medium truncate">{p.name}</div>
@@ -123,7 +164,7 @@ export function SearchPanel({
               )}
             </>
           ) : (
-            <div className="max-h-72 overflow-y-auto border-t border-divider pt-1" data-testid="search-list">
+            <div className="max-h-72 overflow-y-auto border-t border-divider pt-1" data-testid="side-list">
               {list.length === 0 && (
                 <div className="px-1.5 py-1 text-[10px] text-muted-foreground">nothing here</div>
               )}
@@ -141,7 +182,7 @@ export function SearchPanel({
                       setSelected(p.id);
                       handleResultClick(p);
                     }}
-                    data-testid="search-list-row"
+                    data-testid="side-list-row"
                     data-id={p.id}
                   >
                     <span className="font-medium truncate flex-1">{p.name}</span>

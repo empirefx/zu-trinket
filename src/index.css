@@ -82,3 +82,9 @@ body {
   width: 20px;
   height: 20px;
 }
+
+/* category-panel tabs use them at 24px */
+#category-panel .cat-icon {
+  width: 24px;
+  height: 24px;
+}

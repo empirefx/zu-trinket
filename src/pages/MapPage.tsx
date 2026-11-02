@@ -1,8 +1,7 @@
 import { CATEGORIES } from "../lib/data";
 import { type Data } from "../lib/data";
 import MapView from "../components/map/MapView";
-import { SearchPanel } from "../components/ui/SearchPanel";
-import { MapListPanel } from "../components/ui/MapListPanel";
+import { SidePanel } from "../components/ui/SidePanel";
 import { CategoryPanel } from "../components/ui/CategoryPanel";
 import { CursorReadout } from "../components/ui/CursorReadout";
 import { useMapState } from "../hooks/useMapState";
@@ -63,8 +62,10 @@ export function MapPage({ data, slug, setSlug, isActive }: MapPageProps) {
         )}
       </div>
 
-      <SearchPanel
+      <SidePanel
         data={data}
+        slug={slug}
+        onMapSelect={setSlug}
         meta={meta}
         points={mapPoints}
         mquery={mquery}
@@ -79,8 +80,7 @@ export function MapPage({ data, slug, setSlug, isActive }: MapPageProps) {
           countByCat={countByCat}
           onToggle={toggleCategory}
         />
-      </SearchPanel>
-      <MapListPanel data={data} slug={slug} onSelect={setSlug} />
+      </SidePanel>
       <CursorReadout cursor={cursor} />
     </div>
   );
