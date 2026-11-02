@@ -4,6 +4,7 @@ import MapView from "../components/map/MapView";
 import { SidePanel } from "../components/ui/SidePanel";
 import { CategoryPanel } from "../components/ui/CategoryPanel";
 import { CursorReadout } from "../components/ui/CursorReadout";
+import { SavedPanel } from "../components/ui/SavedPanel";
 import { useMapState } from "../hooks/useMapState";
 
 interface MapPageProps {
@@ -26,6 +27,11 @@ export function MapPage({ data, slug, setSlug, isActive }: MapPageProps) {
     setMquery,
     focus,
     results,
+    saved,
+    savedSet,
+    toggleSaved,
+    viewport,
+    setViewport,
     mapName,
     handleResultClick,
     hasTransform,
@@ -49,6 +55,9 @@ export function MapPage({ data, slug, setSlug, isActive }: MapPageProps) {
             visible={visible}
             onCursor={setCursor}
             focus={focus}
+            saved={savedSet}
+            onToggleSaved={toggleSaved}
+            onViewport={setViewport}
           />
         )}
         {!hasTransform && (
@@ -81,6 +90,14 @@ export function MapPage({ data, slug, setSlug, isActive }: MapPageProps) {
           onToggle={toggleCategory}
         />
       </SidePanel>
+      <SavedPanel
+        data={data}
+        meta={meta}
+        points={mapPoints}
+        saved={saved}
+        viewport={viewport}
+        onClick={handleResultClick}
+      />
       <CursorReadout cursor={cursor} />
     </div>
   );

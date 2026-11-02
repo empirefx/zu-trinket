@@ -68,6 +68,9 @@ export function fromPixel(t: Transform, px: number, py: number): [number, number
 
 export type Category = { key: string; label: string; color: string };
 
+// the main map's viewport as fractions of the map's pixel box (minimap rect)
+export type Viewport = { x: number; y: number; w: number; h: number };
+
 export const CATEGORIES: Category[] = [
   { key: "npc", label: "NPC", color: "#4aa3ff" },
   { key: "mob", label: "Monster", color: "#e5484d" },
@@ -78,4 +81,13 @@ export const CATEGORIES: Category[] = [
 
 export function catColor(cat: string): string {
   return CATEGORIES.find((c) => c.key === cat)?.color ?? "#94a3b8";
+}
+
+// world (x,z) -> the game's map units (the longer axis of the world rect is
+// 1000 units) — the same numbers the in-game cursor readout shows
+export function mapUnits(meta: MapMeta, gx: number, gz: number): [number, number] | null {
+  if (!meta.rect) return null;
+  const [x0, z0, sx, sz] = meta.rect;
+  const s = Math.max(sx, sz) / 1000;
+  return [(gx - x0) / s, (gz - z0) / s];
 }

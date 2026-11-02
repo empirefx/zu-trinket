@@ -1,5 +1,10 @@
 @import "@heroui/styles";
 
+/* named gray for hint text */
+@theme {
+  --color-dimgrey: #696969;
+}
+
 :root {
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
   color-scheme: dark;
@@ -81,6 +86,11 @@ body {
 .marker-icon {
   width: 20px;
   height: 20px;
+}
+
+/* a pinned marker (click toggles it in the SavedPanel) */
+.marker-saved {
+  box-shadow: 0 0 0 2px #fbbf24, 0 0 8px 1px rgba(251, 191, 36, 0.55);
 }
 
 /* category-panel tabs use them at 24px */

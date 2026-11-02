@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Card, CardContent, Input } from "@heroui/react";
 import { type Data, type MapMeta, type Point } from "../../lib/data";
-import { toPixel } from "../../lib/data";
+import { toPixel, mapUnits } from "../../lib/data";
 
 type ListTab = "map" | "search" | "npc" | "monster";
 
@@ -17,14 +17,6 @@ interface SidePanelProps {
   handleResultClick: (p: { id: number; map: string | null }) => void;
   mapName: (s: string) => string;
   children?: ReactNode;
-}
-
-// the game's map units: the longer axis of the world rect is 1000 units
-function cursorXY(meta: MapMeta | undefined, p: Point): [number, number] | null {
-  if (!meta?.rect) return null;
-  const [x0, z0, sx, sz] = meta.rect;
-  const s = Math.max(sx, sz) / 1000;
-  return [(p.gx - x0) / s, (p.gz - z0) / s];
 }
 
 // 999 = the level is not known
@@ -169,7 +161,7 @@ export function SidePanel({
                 <div className="px-1.5 py-1 text-[10px] text-muted-foreground">nothing here</div>
               )}
               {list.map((p) => {
-                const xy = cursorXY(meta, p);
+                const xy = meta ? mapUnits(meta, p.gx, p.gz) : null;
                 const lvl = knownLevel(p);
                 const mid = tab === "npc" ? p.func : lvl !== null ? `L${lvl}` : "";
                 return (

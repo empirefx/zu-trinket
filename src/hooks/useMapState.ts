@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { CATEGORIES, type Data, type MapMeta } from "../lib/data";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { CATEGORIES, type Data, type MapMeta, type Viewport } from "../lib/data";
 
 interface UseMapStateOpts {
   data: Data | null;
@@ -15,6 +15,10 @@ export function useMapState({ data, slug: externalSlug, setSlug: externalSetSlug
   const [cursor, setCursor] = useState<[number, number] | null>(null);
   const [mquery, setMquery] = useState("");
   const [focus, setFocus] = useState<{ id: number } | null>(null);
+  // main-map viewport as fractions of the pixel box (minimap rectangle)
+  const [viewport, setViewport] = useState<Viewport | null>(null);
+  // marker-click pins, insertion-ordered (Set + array for render order)
+  const [saved, setSaved] = useState<number[]>([]);
 
   const slug = externalSlug ?? internalSlug;
   const setSlug = externalSetSlug ?? setInternalSlug;
@@ -64,6 +68,11 @@ export function useMapState({ data, slug: externalSlug, setSlug: externalSetSlug
     });
   };
 
+  const toggleSaved = useCallback((id: number) => {
+    setSaved((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  }, []);
+  const savedSet = useMemo(() => new Set(saved), [saved]);
+
   return {
     slug,
     setSlug,
@@ -81,6 +90,11 @@ export function useMapState({ data, slug: externalSlug, setSlug: externalSetSlug
     results,
     mapName,
     handleResultClick,
+    saved,
+    savedSet,
+    toggleSaved,
+    viewport,
+    setViewport,
     hasTransform: !!data?.transform[slug],
   };
 }
