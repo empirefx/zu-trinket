@@ -103,7 +103,7 @@ export function loadSets(): Promise<Record<string, GearSet>> {
   return setCache;
 }
 
-// Cumulative enhance bonus % for a group at a level (extra levels clamp to max).
+// Cumulative enhance **fraction** for a group at a level (0.112 = +11.2 %; extra levels clamp to max).
 export function enhancePct(star: StarCurves, group: number, level: number): number {
   const curve = star[String(group)];
   if (!curve || level <= 0) return 0;

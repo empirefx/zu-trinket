@@ -111,24 +111,23 @@ export const REFINE_SET: Record<number, string> = {
 // "Attack Speed Increased", "Defensive Spirit Breath").
 
 // The numbers the game prints for one element, for a given active element set
-// (a bitmask), the item's enhance factor and the element's own value (from the
-// item record, ITEMS +376).
+// (a bitmask) and the element's own value (from the item record, ITEMS +376).
 //
-//   value = base * multiplier(active set) * enhance factor
+//   value = base * multiplier(active set)
 //   swing = base / 2                            (the +-50 % the tooltip shows)
 //
 // The multiplier is the game's own table (ITEMFIVEATTRIBUTE.ZU1); the base is
-// the item's authored element value.
+// the item's authored element value. The ten tooltip dumps show the element
+// values never scale with the enchant.
 export function elementNumbers(
   name: string,
   base: number | undefined,
   activeMask: number,
-  enhance: number = 1,
 ): { mult: number | undefined; value: number | undefined; swings: string[] } {
   const mult = ELEMENT_SETS[String(activeMask)]?.[name];
   const value =
     base !== undefined && mult !== undefined
-      ? Math.floor(base * mult * enhance)
+      ? Math.floor(base * mult)
       : undefined;
   const swings: string[] = [];
   const w = ELEMENT_WHEEL[name];
@@ -140,9 +139,8 @@ export function elementNumbers(
   return { mult, value, swings };
 }
 
-// Darksteel bonus as a fraction of the rank stat: Perfect = 2.621, anchored
-// to the skeleton dump (floor(115 × 2.621) = 301); Fine/Well are ⅓/⅔
-// placeholders until a dump pins them (zu-re/docs/darksteel.md).
+// Darksteel gain fraction per tier — the spec's current estimates, to be
+// swapped for the measured values in a later task (zu-re/docs/darksteel.md).
 export const DARKSTEEL_PCT: Record<DarksteelTier, number> = {
   fine: 2.621 / 3,
   well: 2.621 * 2 / 3,
@@ -156,32 +154,79 @@ export const TIER_LABEL: Record<DarksteelTier, string> = {
   perfect: "Perfect",
 };
 
-// The darksteel bonus on a rank stat: flat, floored, 0 with no tier or a
-// null stat — callers add it after the enhance multiply, never inside it.
+// Flat quality gain on the rank stat; statLine/damageLine fold it into the
+// total — never multiplied by enchant. 0 with no tier or a null stat.
 export function darksteelBonus(base: number | null, tier: DarksteelTier | undefined): number {
   return tier === undefined || base === null ? 0 : Math.floor(base * DARKSTEEL_PCT[tier]);
 }
 
-// The drawer's click cycle: off → Fine → Well → Perfect → off.
-export function nextDarksteelTier(cur: DarksteelTier | undefined): DarksteelTier | undefined {
-  if (cur === undefined) return "fine";
-  if (cur === "fine") return "well";
+// Fine → Well → Perfect → fine (no off — the game always shows a quality).
+export function nextDarksteelTier(cur: DarksteelTier | undefined): DarksteelTier {
+  if (cur === undefined || cur === "fine") return "well";
   if (cur === "well") return "perfect";
-  return undefined;
+  return "fine";
+}
+
+export type StatLine = { total: number; paren: number };
+
+// One stat line: the enchant paren is floor(base × enchantFrac) and the
+// quality gain rides inside the total (never in the paren).
+export function statLine(base: number, enchantFrac: number, tier?: DarksteelTier): StatLine {
+  const paren = Math.floor(base * enchantFrac);
+  return { total: base + paren + darksteelBonus(base, tier), paren };
+}
+
+// A weapon's two ends share one flat: floor((min+max)/2 × enchantFrac).
+export function damageLine(
+  min: number,
+  max: number,
+  enchantFrac: number,
+  tier?: DarksteelTier,
+): { minTotal: number; maxTotal: number; paren: number } {
+  const paren = Math.floor(((min + max) / 2) * enchantFrac);
+  return {
+    minTotal: min + paren + darksteelBonus(min, tier),
+    maxTotal: max + paren + darksteelBonus(max, tier),
+    paren,
+  };
+}
+
+// The game's own line, e.g. "Fine PD: 32(+3)" — quality word from the tier
+// (default Fine); the paren only when the enchant added something.
+export function statLineText(
+  base: number,
+  enchantFrac: number,
+  tier: DarksteelTier | undefined,
+  label: string,
+): string {
+  const { total, paren } = statLine(base, enchantFrac, tier);
+  return `${TIER_LABEL[tier ?? "fine"]} ${label}: ${total}${paren > 0 ? `(+${paren})` : ""}`;
+}
+
+// e.g. "Fine Damage: 174~298(+19)" — one paren for both ends.
+export function damageLineText(
+  min: number,
+  max: number,
+  enchantFrac: number,
+  tier?: DarksteelTier,
+): string {
+  const { minTotal, maxTotal, paren } = damageLine(min, max, enchantFrac, tier);
+  return `${TIER_LABEL[tier ?? "fine"]} Damage: ${minTotal}~${maxTotal}${paren > 0 ? `(+${paren})` : ""}`;
 }
 
 // Sum of what every equipped item contributes to the player's sheet.
-// star = the STAR.bin curves; without them enhance is ignored (multiplier 1).
+// star = the STAR.bin curves; without them the enchant fraction is 0.
 export function gearTotals(gear: Record<string, EquipEntry>, star: StarCurves = {}) {
   const t = { atkMin: 0, atkMax: 0, phys: 0, mag: 0 };
   for (const e of Object.values(gear)) {
-    const m = 1 + enhancePct(star, e.item.starGroup, e.enhance) / 100;
+    const c = enhancePct(star, e.item.starGroup, e.enhance);
     const rk = e.item.ranks[Math.min(e.rank, e.item.ranks.length - 1)];
     const [a, b, p, g] = rk ?? [e.item.atkMin, e.item.atkMax, e.item.phys, e.item.mag];
-    t.atkMin += (a ?? 0) * m + darksteelBonus(a, e.darksteel?.dmg);
-    t.atkMax += (b ?? 0) * m + darksteelBonus(b, e.darksteel?.dmg);
-    t.phys += (p ?? 0) * m + darksteelBonus(p, e.darksteel?.pd);
-    t.mag += (g ?? 0) * m + darksteelBonus(g, e.darksteel?.md);
+    const d = damageLine(a ?? 0, b ?? 0, c, e.darksteel?.dmg);
+    t.atkMin += d.minTotal;
+    t.atkMax += d.maxTotal;
+    t.phys += statLine(p ?? 0, c, e.darksteel?.pd).total;
+    t.mag += statLine(g ?? 0, c, e.darksteel?.md).total;
   }
   return t;
 }

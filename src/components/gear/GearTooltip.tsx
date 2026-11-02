@@ -112,7 +112,7 @@ export function GearTooltip({ entry }: { entry: EquipEntry }) {
       {ELEMENTS.map(([name], idx) => {
         const active = activeElems.includes(name);
         const base = item.elems?.[rank]?.[idx] ?? undefined;
-        const { value, swings } = elementNumbers(name, base, activeMask, enhFactor);
+        const { value, swings } = elementNumbers(name, base, activeMask);
         const w = ELEMENT_WHEEL[name];
         const pos = !!w && !!(activeMask & ELEMENT_BIT[w.pos]);
         const neg = !!w && !!(activeMask & ELEMENT_BIT[w.neg]);

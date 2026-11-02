@@ -219,7 +219,7 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd, initial }: GearDraw
               const w = ELEMENT_WHEEL[name];
               const active = onElem.has(name);
               const base = item.elems?.[Math.min(rank, item.elems.length - 1)]?.[idx] ?? undefined;
-              const { value, swings } = elementNumbers(name, base, activeMask, enhFactor);
+              const { value, swings } = elementNumbers(name, base, activeMask);
               const pos = !!w && !!(activeMask & ELEMENT_BIT[w.pos]);
               const neg = !!w && !!(activeMask & ELEMENT_BIT[w.neg]);
               const tag = !active
