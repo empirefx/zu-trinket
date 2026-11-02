@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { pretty, SLOT_REFINE, REFINE_SET, elementNumbers, darksteelBonus, nextDarksteelTier, TIER_LABEL } from "./gearSlots";
+import { pretty, SLOT_REFINE, REFINE_SET, elementNumbers, darksteelBonus, nextDarksteelTier, TIER_LABEL, statLine, damageLine } from "./gearSlots";
 import { REFINE_ATTRS } from "./refineData";
 import { ATTR_INFO } from "./attrData";
 import { ELEMENT_BIT, ELEMENT_WHEEL } from "./elementWheel";
@@ -9,7 +9,7 @@ import { enhancePct } from "../../lib/items";
 import { iconClass } from "../../lib/icons";
 import type { DarksteelKey, DarksteelTier, EquipEntry, Item } from "../../lib/items";
 
-// Enhance is driven by STAR.bin (item.starGroup -> cumulative bonus % curve), so
+// Enchant is driven by STAR.bin (item.starGroup -> cumulative bonus % curve), so
 // the strip stops at the group's max level. REFINE_ATTRS lists the potential
 // attributes this slot can roll (from REFINE.ZU1). ponytail: the item's own
 // element mask / potential value / attribute +N values aren't stored in the
@@ -18,10 +18,8 @@ import type { DarksteelKey, DarksteelTier, EquipEntry, Item } from "../../lib/it
 export const glyph = (i: number) => (i < 10 ? "★" : i < 20 ? "☾" : "☀");
 export const glyphColor = (i: number) => (i < 10 ? "#e8c36a" : i < 20 ? "#9ecbff" : "#ffd36e");
 
-// base row: rank stat + flat bonus; enhance row: floored enhanced stat + flat bonus
+// base row = rank stat + quality gain (no enchant)
 const dsEnd = (v: number | null, t?: DarksteelTier) => (v === null ? "—" : String(v + darksteelBonus(v, t)));
-const dsScaled = (v: number | null, t?: DarksteelTier, enh = 1) =>
-  v === null ? "—" : String(Math.floor(v * enh) + darksteelBonus(v, t));
 
 // "3 suns" = enhance level 21..30 (the strip is 10 stars, 10 moons, 10 suns)
 const shownEnhLabel = (lvl: number) =>
@@ -66,10 +64,10 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd, initial }: GearDraw
   const enh = Math.min(enhRaw, maxEnh);
 
   // The multiplier the game applies for the currently active element set
-  // (ITEMFIVEATTRIBUTE.ZU1: one row per set, keyed by the element bitmask)
-  // and the item's enhance factor (STAR.bin, the same one the stats use).
+  // (ITEMFIVEATTRIBUTE.ZU1: one row per set, keyed by the element bitmask).
   const activeMask = ELEMENTS.reduce((m, [k, bit]) => m | (onElem.has(k) ? bit : 0), 0);
-  const enhFactor = 1 + enhancePct(star ?? {}, item.starGroup, enh) / 100;
+  // raw enchant fraction from the STAR curve — the base rows below need it
+  const enhPct = enhancePct(star ?? {}, item.starGroup, enh);
 
   const maxRank = Math.max(item.ranks.length - 1, 0);
   const rk = item.ranks[Math.min(rank, maxRank)] ?? [item.atkMin, item.atkMax, item.phys, item.mag];
@@ -92,29 +90,28 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd, initial }: GearDraw
   if (hasAttack) {
     base.push({
       k: "Attack",
-      v: `${dsEnd(rAtkMin, ds.dmg)} ~ ${dsEnd(rAtkMax, ds.dmg)}${ds.dmg ? ` (${TIER_LABEL[ds.dmg]})` : ""}`,
+      v: `${dsEnd(rAtkMin, ds.dmg)} ~ ${dsEnd(rAtkMax, ds.dmg)} (${TIER_LABEL[ds.dmg ?? "fine"]})`,
       dsKey: "dmg",
     });
   } else {
     base.push({
       k: "Phys Def",
-      v: dsEnd(rPhys, ds.pd) + (ds.pd ? ` (${TIER_LABEL[ds.pd]})` : ""),
+      v: `${dsEnd(rPhys, ds.pd)} (${TIER_LABEL[ds.pd ?? "fine"]})`,
       dsKey: "pd",
     });
     base.push({
       k: "Mag Def",
-      v: dsEnd(rMag, ds.md) + (ds.md ? ` (${TIER_LABEL[ds.md]})` : ""),
+      v: `${dsEnd(rMag, ds.md)} (${TIER_LABEL[ds.md ?? "fine"]})`,
       dsKey: "md",
     });
   }
-  // the enhance curve (STAR.bin) scales the stats, same as the element values
-  const enhPctNow = enhancePct(star ?? {}, item.starGroup, enh);
-  if (enhPctNow > 0) {
+  // enchant row: helper totals (weapon shares one avg-flat paren, never per-end floor)
+  if (enhPct > 0) {
     base.push({
-      k: `At ${shownEnhLabel(enh)} enhance`,
+      k: `At ${shownEnhLabel(enh)} enchant`,
       v: hasAttack
-        ? `${dsScaled(rAtkMin, ds.dmg, enhFactor)} ~ ${dsScaled(rAtkMax, ds.dmg, enhFactor)}`
-        : `${dsScaled(rPhys, ds.pd, enhFactor)} / ${dsScaled(rMag, ds.md, enhFactor)}`,
+        ? `${damageLine(rAtkMin ?? 0, rAtkMax ?? 0, enhPct, ds.dmg).minTotal} ~ ${damageLine(rAtkMin ?? 0, rAtkMax ?? 0, enhPct, ds.dmg).maxTotal}`
+        : `${statLine(rPhys ?? 0, enhPct, ds.pd).total} / ${statLine(rMag ?? 0, enhPct, ds.md).total}`,
     });
   }
   const refineSlot = SLOT_REFINE[appSlot] ?? 0;
@@ -160,7 +157,7 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd, initial }: GearDraw
 
         <div className="drawer-body">
           <div className="sec">
-            Base stats <span className="sec-hint">{anyDs ? "(est.)" : "(click a stat)"}</span>
+            Base stats <span className="sec-hint">(click a stat)</span>
           </div>
           <div className="statgrid">
             {base.map(({ k, v, dsKey }) => (
@@ -176,9 +173,16 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd, initial }: GearDraw
           </div>
 
           <div className="sec">
-            Enhance <span className="sec-val">{shownEnh}{shownPct > 0 && ` · +${shownPct}%`}</span>
+            Enchant <span className="sec-val">{shownEnh}{shownPct > 0 && ` · +${(shownPct * 100).toFixed(1)}%`}</span>
           </div>
           <div className="rate" onMouseLeave={() => setHover(null)}>
+            <span
+              style={{ color: shownEnh === 0 ? "#e8c36a" : "#3a4150" }}
+              onMouseEnter={() => setHover({ n: 1, v: 0 })}
+              onClick={() => setEnh(0)}
+            >
+              ⚬
+            </span>
             {Array.from({ length: maxEnh }, (_, i) => (
               <span
                 key={i}
@@ -191,6 +195,7 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd, initial }: GearDraw
             ))}
           </div>
           <div className="rate-legend">
+            <span>⚬ None</span>
             <span>★ Stars 1–10</span>
             <span>☾ Moons 11–20</span>
             <span>☀ Suns 21–30</span>
