@@ -139,12 +139,13 @@ export function elementNumbers(
   return { mult, value, swings };
 }
 
-// Darksteel gain fraction per tier — the spec's current estimates, to be
-// swapped for the measured values in a later task (zu-re/docs/darksteel.md).
+// Quality gains are server-rolled in game (samples 5–13.5 % of base,
+// zu-re/docs/darksteel.md §5/§6); these are the spec's estimates, shown
+// without any UI label (user's call). Fine = 0 = the default.
 export const DARKSTEEL_PCT: Record<DarksteelTier, number> = {
-  fine: 2.621 / 3,
-  well: 2.621 * 2 / 3,
-  perfect: 2.621,
+  fine: 0,
+  well: 0.05,
+  perfect: 0.10,
 };
 
 // Display words for the tier ids (the game composes them server-side).
