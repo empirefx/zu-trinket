@@ -536,18 +536,21 @@
 .gear-page .slot { position: relative; }
 
 .gear-page .talent-grid {
+  /* take the whole card width; icons are 1.5x the 32px sprite cell */
+  --zs: 1.5;
   display: grid;
-  grid-template-columns: repeat(4, 32px);
-  grid-template-rows: repeat(8, 32px);
-  gap: 8px;
-  width: fit-content;  /* the grid is narrower than the card - centre it */
-  margin-inline: auto;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(8, 48px);
+  gap: 10px;
+  width: 100%;
+  justify-items: center;
+  align-items: center;
 }
 
 .gear-page .talent-node {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   cursor: pointer;
 }
 
@@ -599,8 +602,8 @@
 
 /* a cell with no talent stays empty - no style at all */
 .gear-page .talent-gap {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
 }
 
 /* the shared hover tooltip: the name, the description and a meta line -
