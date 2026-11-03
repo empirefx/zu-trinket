@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from "react";
+import { useState, type Key, type ReactNode } from "react";
+import { Button, Description, Input, Label, ListBox, Modal, Select } from "@heroui/react";
 import { GearColumn } from "./GearColumn";
 import { GearViewer } from "./GearViewer";
 import { GearSlot } from "./GearSlot";
@@ -9,10 +10,9 @@ import { PetPicker } from "./PetPicker";
 import { CLASS_NAMES, SLOT_ITEMS } from "./gearSlots";
 import { iconClass, petIconClass } from "../../lib/icons";
 import { usePets } from "../../hooks/usePets";
-import { useBuild } from "./BuildContext";
+import { useBuild, type ClassId } from "./BuildContext";
 import { TITLES } from "./titles";
 import type { EquipEntry, Item } from "../../lib/items";
-import { Button, Description, Label, ListBox, Modal } from "@heroui/react";
 
 const LEFT_SLOTS = [
   "Precious",
@@ -65,36 +65,53 @@ export function CharacterGear() {
   return (
     <div className="flex flex-col gap-2 min-w-0" data-testid="character-gear">
       <div className="head">
-        <label>
-          Level
-          <input
+        <div className="field">
+          <span>Level</span>
+          <Input
             type="number"
-            min="0"
-            max="200"
+            aria-label="Level"
+            variant="secondary"
+            className="w-14"
             value={level}
             onChange={(e) => setLevel(Math.max(0, Math.min(200, parseInt(e.target.value) || 0)))}
           />
-        </label>
-        <label>
-          Title
-          <button
+        </div>
+        <div className="field">
+          <span>Title</span>
+          <Button
             type="button"
-            className="w-[140px] text-left px-2 py-1 border rounded cursor-pointer"
-            onClick={() => setTitleModalOpen(true)}
-            title={TITLES_OPTIONS.find((t) => t.name === title)?.effect || ""}
+            className="title-button cursor-pointer"
+            onPress={() => setTitleModalOpen(true)}
           >
             {title}
-          </button>
-        </label>
-        <br />
-        <label>
-          Class
-          <select value={classId} onChange={(e) => setClassId(e.target.value as any)}>
-            {Object.entries(CLASS_NAMES).map(([id, name]) => (
-              <option key={id} value={id}>{name}</option>
-            ))}
-          </select>
-        </label>
+          </Button>
+        </div>
+        <div className="field">
+          <span>Class</span>
+          <Select
+            aria-label="Class"
+            variant="secondary"
+            className="w-44"
+            placeholder="Class"
+            value={classId}
+            onChange={(v: Key | Key[] | null) => setClassId(String(v) as ClassId)}
+          >
+            <Select.Trigger>
+              <Select.Value />
+              <Select.Indicator />
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {Object.entries(CLASS_NAMES).map(([id, name]) => (
+                  <ListBox.Item key={id} id={id} textValue={name}>
+                    {name}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
+        </div>
       </div>
 
       <div className="gear">

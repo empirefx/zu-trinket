@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Input } from "@heroui/react";
 import { GearColumn } from "./GearColumn";
 import { GearViewer } from "./GearViewer";
 import { GearSlot } from "./GearSlot";
@@ -86,17 +87,18 @@ export function PetGear() {
       data-testid="pet-gear"
     >
       <div className="head">
-        <label>
-          {species?.name ?? "Pet"}
-          <input
+        <div className="field">
+          <span>{species?.name ?? "Pet"}</span>
+          <Input
             type="number"
-            min="0"
-            max="300"
+            aria-label="Pet level"
+            variant="secondary"
+            className="w-14"
             value={pet?.level ?? level}
             disabled={!hasPet}
             onChange={(e) => setPetLevel(parseInt(e.target.value) || 0)}
           />
-        </label>
+        </div>
       </div>
 
       <div className="gear">

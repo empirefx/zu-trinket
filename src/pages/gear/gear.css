@@ -5,17 +5,6 @@
   font: 14px system-ui, "Segoe UI", Roboto, sans-serif;
 }
 
-.gear-page input,
-.gear-page select {
-  background: #11131a;
-  border: 1px solid #3a4150;
-  color: #eee;
-  padding: 4px 6px;
-  border-radius: 3px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
 /* the build-name field: bordered-none gray pill, capped width, ellipsis text
    (the .input BEM rule would keep the border and the box background) */
 .gear-page input[aria-label="Build name"] {
@@ -26,25 +15,44 @@
   max-width: 280px;
 }
 
+/* the level/title/class fields sit on one flex row; each field is an
+   inline row of label + control */
 .gear-page .head {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.gear-page .head label {
-  font-size: 12px;
-  color: #9aa;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
 
-.gear-page .info {
-  margin-bottom: 10px;
-  color: #9aa;
-  font-size: 12px;
+.gear-page .head .field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* labels a bit bigger than the old 12px, muted, on one line with the control */
+.gear-page .head .field > span {
+  font-size: 14px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* level / pet level / class / title share the gray pill look
+   (the hero .input/.select__trigger BEM rules would keep their own colors) */
+.gear-page .head .input,
+.gear-page .head .select__trigger,
+.gear-page .head .title-button {
+  background: var(--surface-secondary);
+  border: 0;
+  border-radius: 9999px;
+  min-height: 36px;
+}
+
+.gear-page .head .select__value,
+.gear-page .head .title-button {
+  font-size: 14px;
 }
 
 .gear-page .gear {
@@ -147,16 +155,6 @@
   -webkit-appearance: none;
   margin: 0;
 }
-
-/* Select styling */
-.gear-page select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239aa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 6px center;
-  padding-right: 24px;
-}
-
 
 /* --- gear picker (modal) + drawer --- */
 .gear-page .overlay,
