@@ -134,6 +134,7 @@
   gap: 12px;
   place-self: center;
   margin-top: 12px;
+  --zs: 1.5; /* spell icons render 1.5x the 32px pet-sprite cell */
 }
 
 /* spell slots carry no slot art (i-S1..i-S8 have no sprite cell) - no bg image */
