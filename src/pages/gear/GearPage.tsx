@@ -34,8 +34,8 @@ export function GearPage() {
         className="gear-page h-full w-full overflow-auto"
         data-testid="gear-page"
       >
-        {/* pt clears the floating Map/Gear tab bar (TopTabs, absolute top-3) */}
-        <main className="mx-auto max-w-6xl p-3 pt-16 sm:p-6 sm:pt-16">
+        {/* pt-16 clears the floating Map/Gear tab bar (TopTabs, absolute top-3) */}
+        <main className="mx-auto max-w-6xl p-3 pt-16 sm:p-6 sm:pt-30">
           <Tabs
             selectedKey={tab}
             onSelectionChange={(k) => setTab(String(k))}
