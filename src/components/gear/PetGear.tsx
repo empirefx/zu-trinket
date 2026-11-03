@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from "react";
-import { Box } from "./Box";
 import { GearColumn } from "./GearColumn";
 import { GearViewer } from "./GearViewer";
 import { GearSlot } from "./GearSlot";
@@ -82,7 +81,10 @@ export function PetGear() {
   };
 
   return (
-    <Box title="Pet Gear" maxWidth="360px" className="gears" dimmed={!hasPet}>
+    <div
+      className={`flex flex-col gap-2 min-w-0 ${hasPet ? "" : "opacity-40 pointer-events-none grayscale"}`}
+      data-testid="pet-gear"
+    >
       <div className="head">
         <label>
           {species?.name ?? "Pet"}
@@ -136,6 +138,6 @@ export function PetGear() {
           }}
         />
       )}
-    </Box>
+    </div>
   );
 }

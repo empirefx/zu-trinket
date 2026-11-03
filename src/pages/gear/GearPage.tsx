@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Tabs } from "@heroui/react";
+import { useState, type ReactNode } from "react";
+import { Card, Tabs } from "@heroui/react";
 import "./gear.css";
 import "./slots-sprite.css";
 import { CharacterGear } from "../../components/gear/CharacterGear";
@@ -8,10 +8,24 @@ import { PetGear } from "../../components/gear/PetGear";
 import { PetStats } from "../../components/gear/PetStats";
 import { TalentTrees } from "../../components/gear/TalentTrees";
 import { BuildProvider } from "../../components/gear/BuildContext";
-import { BuildsBar } from "../../components/gear/BuildsBar";
+import { BuildsHeader } from "../../components/gear/BuildsHeader";
+
+const SECTIONS = [["character", "Character"], ["talent", "Talent"], ["pet", "Pet"]] as const;
+
+// One gear panel: two columns on desktop, stacked on mobile (skeleton's Split).
+function Split({ left, right }: { left: ReactNode; right: ReactNode }) {
+  return (
+    <Card className="rounded-[28px] p-0 gap-0">
+      <Card.Content className="grid grid-cols-1 md:grid-cols-2 p-0">
+        <div className="p-4 sm:p-6">{left}</div>
+        <div className="p-4 sm:p-6 border-t md:border-t-0 md:border-l border-separator">{right}</div>
+      </Card.Content>
+    </Card>
+  );
+}
 
 export function GearPage() {
-  const [tab, setTab] = useState("pet");
+  const [tab, setTab] = useState("character");
 
   return (
     <BuildProvider>
@@ -20,46 +34,40 @@ export function GearPage() {
         className="gear-page h-full w-full overflow-auto"
         data-testid="gear-page"
       >
-        <BuildsBar />
-        <div className="row">
-          <CharacterGear />
-          <PlayerStats />
-
-          {/* the pet and the talent trees share one tabbed column */}
-          <div className="tabs-col">
-            <Tabs
-              className="gear-tabs"
-              selectedKey={tab}
-              onSelectionChange={(k) => setTab(String(k))}
-            >
-              <Tabs.ListContainer>
-                <Tabs.List>
-                  <Tabs.Tab id="pet">
-                    Pet
-                    <Tabs.Indicator />
-                  </Tabs.Tab>
-                  <Tabs.Tab id="talent">
-                    Talent
-                    <Tabs.Indicator />
-                  </Tabs.Tab>
+        {/* pt clears the floating Map/Gear tab bar (TopTabs, absolute top-3) */}
+        <main className="mx-auto max-w-6xl p-3 pt-16 sm:p-6 sm:pt-16">
+          <Tabs
+            selectedKey={tab}
+            onSelectionChange={(k) => setTab(String(k))}
+            variant="secondary"
+            className="flex flex-col gap-4"
+          >
+            {/* the builds header carries the section tabs in its middle slot */}
+            <BuildsHeader>
+              <div className="col-span-2 md:col-span-1 order-3 md:order-2 flex justify-center">
+                <Tabs.List aria-label="Sections" className="w-full md:w-[380px]">
+                  {SECTIONS.map(([id, label]) => (
+                    <Tabs.Tab key={id} id={id} className="flex-1 h-9 text-sm cursor-pointer">
+                      {label}
+                      <Tabs.Indicator />
+                    </Tabs.Tab>
+                  ))}
                 </Tabs.List>
-              </Tabs.ListContainer>
+              </div>
+            </BuildsHeader>
 
-              <Tabs.Panel id="pet">
-                <div className="row tight">
-                  <PetGear />
-                  <PetStats />
-                </div>
-              </Tabs.Panel>
-
-              <Tabs.Panel id="talent">
-                <div className="row tight">
-                  <TalentTrees />
-                </div>
-              </Tabs.Panel>
-            </Tabs>
-          </div>
-        </div>
+            {/* one panel per tab, full width under the header */}
+            <Tabs.Panel id="character">
+              <Split left={<CharacterGear />} right={<PlayerStats />} />
+            </Tabs.Panel>
+            <Tabs.Panel id="talent">
+              <TalentTrees />
+            </Tabs.Panel>
+            <Tabs.Panel id="pet">
+              <Split left={<PetGear />} right={<PetStats />} />
+            </Tabs.Panel>
+          </Tabs>
+        </main>
       </div>
     </BuildProvider>
   );

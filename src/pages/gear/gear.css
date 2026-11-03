@@ -1,83 +1,8 @@
 .gear-page {
   margin: 0;
-  padding: 16px;
-  background: #14161c;
-  color: #ddd;
+  background: #111;
+  color: var(--foreground);
   font: 14px system-ui, "Segoe UI", Roboto, sans-serif;
-}
-
-.gear-page .row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-/* the tab strip of the gear page - the pet and the talent trees share it.
-   The width is fixed so the page does not jump when the tab changes. */
-.gear-page .tabs-col {
-  flex: 0 0 740px;
-  min-width: 0;
-}
-
-.gear-page .gear-tabs .row {
-  margin-top: 0;
-}
-
-.gear-page .gear-tabs .row{
-  justify-content: left;
-}
-
-.gear-page .tabs__panel {
-  padding: 0;
-}
-
-.gear-page .row.tight .box {
-  flex: 1 1 240px;
-  min-width: 0;
-}
-
-/* the tabs are compact and centered, not stretched over the whole column */
-.gear-page .gear-tabs [role="tablist"] {
-  justify-content: center;
-}
-
-.gear-page .gear-tabs [data-slot="tabs-tab"] {
-  width: auto;
-}
-
-.gear-page .gear-tabs [data-slot="tabs-list-container"] {
-  width: fit-content;
-}
-
-.gear-page .box {
-  flex: 1 1 300px;
-  background: #1e222b;
-  border: 1px solid #3a4150;
-  border-radius: 6px;
-  padding: 12px;
-}
-
-.gear-page .box.gears {
-  max-width: 360px;
-}
-
-.gear-page .box.stats {
-  max-width: 250px;
-}
-
-.gear-page .box.dimmed {
-  opacity: 0.4;
-  pointer-events: none;
-  filter: grayscale(0.6);
-}
-
-.gear-page h2 {
-  margin: 0 0 10px;
-  font-size: 15px;
-  color: #e8c36a;
-  font-weight: 600;
 }
 
 .gear-page input,
@@ -89,6 +14,16 @@
   border-radius: 3px;
   width: 100%;
   box-sizing: border-box;
+}
+
+/* the build-name field: bordered-none gray pill, capped width, ellipsis text
+   (the .input BEM rule would keep the border and the box background) */
+.gear-page input[aria-label="Build name"] {
+  border: 0;
+  background: var(--surface-secondary);
+  border-radius: 9999px;
+  padding: 4px 14px;
+  max-width: 280px;
 }
 
 .gear-page .head {
@@ -116,10 +51,6 @@
   display: grid;
   grid-template-columns: 44px 1fr 44px;
   gap: 8px;
-}
-
-.gear-page .gears .head > :last-child {
-  grid-column: 1 / -1;
 }
 
 .gear-page .col {
@@ -197,22 +128,6 @@
 /* spell slots carry no slot art (i-S1..i-S8 have no sprite cell) - no bg image */
 .gear-page .spells .slot {
   background-image: none;
-}
-
-.gear-page .stat {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 4px 0;
-  border-bottom: 1px solid #2a303c;
-}
-
-.gear-page .stat span {
-  color: #fff;
-}
-
-.gear-page .stat:last-child {
-  border-bottom: 0;
 }
 
 .gear-page .sub {
@@ -619,36 +534,16 @@
   color: #e8c36a;
 }
 
-.gear-page .talent-trees {
-  display: flex;
-  gap: 40px;
-  justify-content: center;
-}
-
-.gear-page .talent-tree {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.gear-page .talent-title {
-  color: #e8c36a;
-  font-size: 15px;
-  font-weight: 600;
-  text-align: center;
-}
-
-.gear-page .talent-points {
-  color: #8b93a3;
-  font-size: 11px;
-  text-align: center;
-}
+/* slots are positioned so the corner badge and the hover tooltip anchor to them */
+.gear-page .slot { position: relative; }
 
 .gear-page .talent-grid {
   display: grid;
   grid-template-columns: repeat(4, 32px);
   grid-template-rows: repeat(8, 32px);
   gap: 8px;
+  width: fit-content;  /* the grid is narrower than the card - centre it */
+  margin-inline: auto;
 }
 
 .gear-page .talent-node {
@@ -764,168 +659,6 @@
   margin-top: 4px;
 }
 
-/* slots are positioned so the corner badge and the hover tooltip anchor to them */
-.gear-page .slot { position: relative; }
-
-/* --- saved builds bar --- */
-.builds {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: stretch;
-  width: 100%;
-  max-width: 70%;
-  margin: 200px auto 16px;
-  background: #1e222b;
-  border: 1px solid #3a4150;
-  border-radius: 6px;
-}
-
-.builds__header {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0.75rem;
-  border-right: 1px solid #3a4150;
-}
-
-.builds__header h2 {
-  margin: 0;
-  font-size: 1rem;
-  color: #e8c36a;
-  font-weight: 600;
-}
-
-.builds__count {
-  font-size: 12px;
-  color: #8b93a3;
-}
-
-.builds__list {
-  list-style: none;
-  margin: 0;
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
-  overflow-x: auto;
-}
-
-.build {
-  flex: 0 0 180px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  background: #14161c;
-  border: 1px solid #3a4150;
-  border-radius: 4px;
-}
-
-.build[aria-current="true"] {
-  border: 3px solid #e8c36a;
-}
-
-.build__select {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 0;
-  padding: 0.5rem 0.75rem;
-  text-align: left;
-  background: transparent;
-  border: 0;
-  color: #dfe3ea;
-  cursor: pointer;
-  font: inherit;
-}
-
-.build__select:hover,
-.build__select:focus-visible {
-  background: #262b36;
-}
-
-.build__name {
-  display: block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.build__meta {
-  font-size: 0.8em;
-  color: #8b93a3;
-}
-
-.build__delete {
-  min-width: 44px;
-  background: transparent;
-  border: 0;
-  border-left: 1px solid #3a4150;
-  color: #8b93a3;
-  cursor: pointer;
-  font: inherit;
-}
-
-.build__delete:hover,
-.build__delete:focus-visible {
-  color: #e06c6c;
-  background: #262b36;
-}
-
-.builds__new-wrap {
-  display: flex;
-  align-items: stretch;
-}
-
-.builds__new {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  padding: 0.5rem 1rem;
-  border-width: 0 0 0 1px;
-  border-style: solid;
-  border-color: #3a4150;
-  border-radius: 0;
-  background: transparent;
-  color: #e8c36a;
-  cursor: pointer;
-}
-
-.builds__new:hover:not(:disabled),
-.builds__new:focus-visible {
-  background: #262b36;
-}
-
-.builds__new:disabled,
-.builds__new[data-disabled="true"] {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.builds__empty {
-  margin: 0;
-  padding: 1rem;
-  align-self: center;
-  text-align: center;
-  color: #8b93a3;
-}
-
-@media (max-width: 560px) {
-  .builds {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .builds__header {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    border-right: 0;
-    border-bottom: 1px solid #3a4150;
-  }
-  .builds__new {
-    width: 100%;
-    border-width: 1px 0 0 0;
-  }
-}
 /* --- character gear item card (skeleton: gear-tooltip-skeleton.html) --- */
 .gear-page .hover-tip:has(.item-tip) {
   padding: 0;

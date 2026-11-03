@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from "react";
-import { Box } from "./Box";
 import { GearColumn } from "./GearColumn";
 import { GearViewer } from "./GearViewer";
 import { GearSlot } from "./GearSlot";
@@ -64,7 +63,7 @@ export function CharacterGear() {
   };
 
   return (
-    <Box title="Character Gear" maxWidth="360px" className="gears">
+    <div className="flex flex-col gap-2 min-w-0" data-testid="character-gear">
       <div className="head">
         <label>
           Level
@@ -238,6 +237,6 @@ export function CharacterGear() {
           </Modal.Container>
         </Modal.Backdrop>
       </Modal>
-    </Box>
+    </div>
   );
 }

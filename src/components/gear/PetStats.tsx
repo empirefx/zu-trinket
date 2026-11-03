@@ -1,4 +1,3 @@
-import { Box } from "./Box";
 import { StatRow } from "./StatRow";
 import { usePetStats } from "./usePetStats";
 import { useBuild } from "./BuildContext";
@@ -8,10 +7,12 @@ export function PetStats() {
   const { hasPet } = useBuild();
 
   return (
-    <Box title="Pet Stats" maxWidth="250px" className="stats" dimmed={!hasPet}>
+    <div
+      className={`flex flex-col gap-2 h-full ${hasPet ? "" : "opacity-40 pointer-events-none grayscale"}`}
+    >
       {stats.map((stat, i) => (
-        <StatRow key={i} label={stat.label} value={stat.value} isLast={i === stats.length - 1} />
+        <StatRow key={i} label={stat.label} value={stat.value} />
       ))}
-    </Box>
+    </div>
   );
 }

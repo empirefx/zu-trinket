@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Card, Chip } from "@heroui/react";
 import { useBuild } from "./BuildContext";
 import {
   loadTalents,
@@ -80,15 +81,20 @@ export function TalentTrees() {
         </span>
       </div>
 
-      <div className="talent-trees">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {trees.map((tree, i) => {
           const cells = layout(tree);
           const byId = new Map(states[i].map((s) => [s.node.id, s]));
           return (
-            <div key={tree.tree} className="talent-tree">
-              <div className="talent-title">{names[i] ?? `Talent tree ${i + 1}`}</div>
-              <div className="talent-points">Points: {spent[i]}</div>
-              <div className="talent-grid">
+            <Card key={tree.tree} className="rounded-[28px] p-5">
+              <Card.Header className="flex-row items-center justify-between">
+                <Card.Title className="text-2xl">{names[i] ?? `Talent tree ${i + 1}`}</Card.Title>
+                <Chip size="lg" color="accent" variant="soft">
+                  {spent[i]} pts
+                </Chip>
+              </Card.Header>
+              <Card.Content>
+                <div className="talent-grid">
                 {cells.map((node, k) => {
                   if (!node) return <div key={k} className="talent-gap" />;
                   const st = byId.get(node.id);
@@ -139,8 +145,9 @@ export function TalentTrees() {
                     </div>
                   );
                 })}
-              </div>
-            </div>
+                </div>
+              </Card.Content>
+            </Card>
           );
         })}
       </div>

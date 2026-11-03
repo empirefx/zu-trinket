@@ -1,4 +1,3 @@
-import { Box } from "./Box";
 import { StatRow } from "./StatRow";
 import { usePlayerStats } from "./usePlayerStats";
 
@@ -6,10 +5,10 @@ export function PlayerStats() {
   const stats = usePlayerStats();
 
   return (
-    <Box title="Player Stats" maxWidth="250px" className="stats">
+    <div className="flex flex-col gap-2 h-full">
       {stats.map((stat, i) => (
-        <StatRow key={i} label={stat.label} value={stat.value} isLast={i === 13} />
+        <StatRow key={i} label={stat.label} value={stat.value} />
       ))}
-    </Box>
+    </div>
   );
 }
