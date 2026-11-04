@@ -99,7 +99,7 @@
 }
 
 .gear-page .slot:hover {
-  outline: 1px solid #e8c36a;
+  outline: 2px solid #303030;
 }
 
 .gear-page .slot.active {

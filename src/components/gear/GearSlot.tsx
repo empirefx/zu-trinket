@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { pretty } from "./gearSlots";
 
 interface GearSlotProps {
   label: string;
@@ -10,15 +11,14 @@ interface GearSlotProps {
   value?: string;
   // a small corner badge (e.g. the spell rank 0..9)
   badge?: string;
-  // a hover tooltip in the shared .hover-tip style; replaces the native title
+  // a hover tooltip in the shared .hover-tip style; empty slots get one with
+  // the slot's pretty name (like "Pet Gear Eyes") instead of text on the slot
   tip?: React.ReactNode;
-  // the tooltip text; default = the slot label (or "label: value")
-  title?: string;
   // the css classes that draw the equipped item's icon (the class sprite sheet)
   icon?: string;
 }
 
-export function GearSlot({ label, className = "", onClick, onContextMenu, size = "normal", active, value, badge, tip, title, icon }: GearSlotProps) {
+export function GearSlot({ label, className = "", onClick, onContextMenu, size = "normal", active, value, badge, tip, icon }: GearSlotProps) {
   const slotRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
 
@@ -60,11 +60,12 @@ export function GearSlot({ label, className = "", onClick, onContextMenu, size =
       onClick={onClick}
       onContextMenu={onContextMenu ? (e) => { e.preventDefault(); onContextMenu(); } : undefined}
       onMouseEnter={placeTip}
-      title={tip ? undefined : title ?? (value ? `${label}: ${value}` : label)}
     >
-      {icon ? <span className={"gear-icon zs " + icon} /> : value ?? label}
+      {icon ? <span className={"gear-icon zs " + icon} /> : null}
       {badge ? <span className="rank-badge">{badge}</span> : null}
-      {tip ? <div ref={tipRef} className="hover-tip" role="tooltip">{tip}</div> : null}
+      <div ref={tipRef} className="hover-tip" role="tooltip">
+        {tip ?? <b>{pretty(label)}</b>}
+      </div>
     </div>
   );
 }
