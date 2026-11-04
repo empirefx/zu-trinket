@@ -10,7 +10,10 @@ import { TalentTrees } from "../../components/gear/TalentTrees";
 import { BuildProvider, useBuild } from "../../components/gear/BuildContext";
 import { BuildsHeader } from "../../components/gear/BuildsHeader";
 
-const SECTIONS = [["character", "Character"], ["talent", "Talent"], ["pet", "Pet"]] as const;
+const SECTIONS =
+  [["character", "Character"], ["talent", "Talent"], ["pet", "Pet"], ["skills", "Skills"]] as const;
+
+import { ClassSkills } from "../../components/gear/ClassSkills";
 
 // One gear panel: two columns on desktop, stacked on mobile (skeleton's Split).
 function Split({ left, right }: { left: ReactNode; right: ReactNode }) {
@@ -60,7 +63,7 @@ export function GearPage() {
             {/* the builds header carries the section tabs in its middle slot;
                 it inerts + dims the tabs until a build is selected */}
             <BuildsHeader>
-              <Tabs.List aria-label="Sections" className="w-full md:w-[380px]">
+              <Tabs.List aria-label="Sections" className="w-full md:w-[420px]">
                 {SECTIONS.map(([id, label]) => (
                   <Tabs.Tab key={id} id={id} className="flex-1 h-9 text-sm cursor-pointer">
                     {label}
@@ -84,6 +87,11 @@ export function GearPage() {
             <Tabs.Panel id="pet">
               <Panel>
                 <Split left={<PetGear />} right={<PetStats />} />
+              </Panel>
+            </Tabs.Panel>
+            <Tabs.Panel id="skills">
+              <Panel>
+                <ClassSkills />
               </Panel>
             </Tabs.Panel>
           </Tabs>

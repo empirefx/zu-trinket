@@ -668,6 +668,103 @@
   font-size: 13px;
 }
 
+/* --- class skills ("the I key") --- */
+.gear-page .sk-panel {
+  /* two flex columns that wrap like the skeleton's grid layout */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.gear-page .sk-group {
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: var(--surface-secondary);
+  flex: 1 1 340px;   /* two per row when they fit, one full row when wide */
+  min-width: 300px;
+  max-width: 100%;
+}
+
+.gear-page .sk-group h2 {
+  margin: 0 0 10px;
+  color: var(--foreground);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.gear-page .sk-group-skills,
+.gear-page .sk-group-tree {
+  /* give the level sets and the tree panel their own tint */
+  background: linear-gradient(180deg, rgba(232, 195, 106, 0.06), transparent 70%);
+}
+
+.gear-page .sk-group .sk-grid {
+  background: transparent;
+}
+
+.gear-page .sk-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.gear-page .sk-tile {
+  position: relative;
+  width: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: default;
+}
+
+.gear-page .sk-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+  text-align: center;
+  font-size: 10px;
+  color: var(--muted);
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+/* the per-class gear sprite zooms to 48px for the skill tile
+   (the .zs base positions the sheet, --zs scales every cell) */
+.gear-page .sk-icon .gear-icon {
+  --zs: 1.5;
+}
+
+.gear-page .sk-tile:hover .sk-icon,
+.gear-page .sk-tile:focus-visible .sk-icon {
+  outline: 1px solid #e8c36a;
+}
+
+.gear-page .sk-tile .hover-tip,
+.gear-page .sk-tile:focus-visible .hover-tip,
+.gear-page .sk-tile {
+  /* reveal on hover / focus, same shared .hover-tip look as all other tips */
+}
+.gear-page .sk-tile:hover .hover-tip,
+.gear-page .sk-tile:focus-visible .hover-tip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.gear-page .sk-tile-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
 .gear-page .tip-meta {
   color: #8b93a3;
   margin-top: 4px;
