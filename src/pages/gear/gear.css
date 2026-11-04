@@ -654,6 +654,20 @@
   margin-top: 2px;
 }
 
+/* talent tooltip highlights: numbers/percent bigger + gold, skill/stat names
+   in blue — both a size step above the 12px body so the eye catches them */
+.gear-page .hover-tip .tip-num {
+  color: #ffd98a;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.gear-page .hover-tip .tip-skill {
+  color: #7fb8ff;
+  font-size: 13px;
+}
+
 .gear-page .tip-meta {
   color: #8b93a3;
   margin-top: 4px;

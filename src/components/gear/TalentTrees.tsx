@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Card, Chip } from "@heroui/react";
 import { useBuild } from "./BuildContext";
 import {
@@ -14,6 +14,37 @@ import { iconClass } from "../../lib/icons";
 
 const COLS = 4;
 const ROWS = 8;
+
+// The tooltip body is the game's own prose ("Increases damage of Frost Shot,
+// Flame Shot and Thunder Shot spells by 7%" / "Learn skills: SS.Thunder
+// Chasing, ..."). Highlight what matters:
+// - numbers/percentages (gold, larger),
+// - skill/stat names (blue): an "SS.<name>" class-skill reference, a run of
+//   2+ capitalised words ("Frost Shot", "Critical Strike Damage"), a single
+//   capitalised word standing right before spells/skill/chance/power/speed/
+//   strike, standing stat words (Garrote, Dodge, Parry, Health, ...) and the
+//   lowercase stat phrases ("attack speed", "critical strike", "max health")
+const TIP_RE =
+  /\d+(?:\.\d+)?%(?:s\b)?|\d+(?:,\d{3})+|\b\d+(?:\.\d+)?(?:\s*sec\b)?|\bSS\.[A-Za-z'-]+(?:\s+[A-Z][A-Za-z'-]+)*|[A-Z][A-Za-z'-]+(?:\s+[A-Z][A-Za-z'-]+)+|[A-Z][A-Za-z'-]+(?=\s+(?:spell|spells|skill|chance|power|speed|strike)\b)|\b(?:Garrote|Dodge|Parry|Health|Mana|Defense|Stamina|Accuracy)\b|\b(?:attack|critical|movement)\s+speed\b|\bcritical\s+strike\b|\bmaximum\s+health\b/g;
+
+function TipText({ text }: { text: string }) {
+  const out: ReactNode[] = [];
+  let last = 0;
+  let key = 0;
+  for (const m of text.matchAll(TIP_RE)) {
+    const at = m.index!;
+    if (at > last) out.push(text.slice(last, at));
+    const cls = /\d/.test(m[0]) ? "tip-num" : "tip-skill";
+    out.push(
+      <span key={key++} className={cls}>
+        {m[0]}
+      </span>,
+    );
+    last = at + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return <>{out}</>;
+}
 
 // The tree's rows are the PointNeed bands (0..70 points -> 8 rows) and the
 // nodes of a band are laid out left to right, centred in the row.  The
@@ -133,7 +164,9 @@ export function TalentTrees() {
                       {st.rank > 0 && <span className="rank-badge">{st.rank}</span>}
                       <div className="hover-tip" role="tooltip">
                         <b>{node.name}</b>
-                        <div className="tip-body">{intro}</div>
+                        <div className="tip-body">
+                          <TipText text={intro} />
+                        </div>
                         <div className="tip-meta">
                           {node.maxRank} rank{node.maxRank > 1 ? "s" : ""}
                           {node.pointNeed ? ` · band at ${node.pointNeed} points` : ""}
