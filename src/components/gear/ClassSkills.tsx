@@ -51,11 +51,33 @@ function SkillTip({ skill }: { skill: Skill }) {
 //  * the level ladder set (rank-0 'need' < 20): the game's own level 1-12
 //    skills, low level
 //  * the improved second set (rank 0 need >= 20): Sun Chasing etc, levels 60+
-//  * singles that spend TREE skill points (the god calls/shapeshifts whose
-//    effect carries the growth id 45xxx..) and the remaining no-upgrade
-//    passives/utility singles (traps, heals)
+//  * the TREE spells (the god calls/shapeshifts whose effect carries the growth
+//    id 45xxx.., plus every name the shipped tree list spends points on) and
+//    the remaining no-upgrade passives/utility singles (traps, heals)
+
+// a spell the talent tree spends its points on:
+//  * the effect carries the class growth id (45xxx — the god
+//    calls/shapeshifts "Shapeshift to X. Drag it to the skills bar")
+//  * the name is plumbing ("Talents N"/"Call God"/"Shapeshift ...")
+//  * the desc teaches the mechanic ("Shapeshift to X", "Drag it to...")
+//  * the name is TAUGHT by a talent desc ("Teaches you Defensive Wall") —
+//    the shipped tree list (talentRefs.json) holds those names
+// It runs over every skill, not just the single-row ones: the game ships a
+// talent spell as a rank ladder too (Immobilize, the Formations), and those
+// must not fall into the level groups.
+function isTalentSpell(sk: Skill, talentRefs: Set<string>): boolean {
+  return (
+    (sk.ranks[0].effect >= 45000 && sk.ranks[0].effect < 52000) ||
+    /( Call God| Shapeshift| Talents \d+)$/.test(sk.name) ||
+    /^(Call God|Shapeshift)/.test(sk.name) ||
+    /Shapeshift|Drag it to/.test(sk.desc) ||
+    talentRefs.has(sk.name)
+  );
+}
+
 function groupSkills(skills: Skill[], talentRefs: Set<string>): { key: string; title: string; list: Skill[] }[] {
-  const ladders = skills.filter((s) => s.ranks.length > 1);
+  const tree = skills.filter((s) => isTalentSpell(s, talentRefs));
+  const ladders = skills.filter((s) => s.ranks.length > 1 && !tree.includes(s));
   const starters: Skill[] = [];
   const improved: Skill[] = [];
   for (const sk of ladders) {
@@ -65,24 +87,10 @@ function groupSkills(skills: Skill[], talentRefs: Set<string>): { key: string; t
     if (learn < 20 && top < 20 && sk.ranks[0].need >= 0) starters.push(sk);
     else improved.push(sk);
   }
-  const singles = skills.filter((s) => s.ranks.length === 1);
-  // tree-gated singles, in the game's own tree order:
-  //  * the effect carries the class growth id (45xxx — the god
-  //    calls/shapeshifts "Shapeshift to X. Drag it to the skills bar")
-  //  * their "Talents N"/"Call God" name plumbing rows
-  //  * the name is TAUGHT by a talent desc ("Teaches you Defensive Wall") —
-  //    the tree spends points on it
-  // Everything else keeps its own active/passive effect ("Mighty Power",
-  // "Soul Ward", "Blow"...) and shows in the utility panel
-  const tree = singles.filter(
-    (s) =>
-      (s.ranks[0].effect >= 45000 && s.ranks[0].effect < 52000) ||
-      /( Call God| Shapeshift| Talents \d+)$/.test(s.name) ||
-      /^(Call God|Shapeshift)/.test(s.name) ||
-      /Shapeshift|Drag it to/.test(s.desc) ||
-      talentRefs.has(s.name),
-  );
-  const rest = singles.filter((s) => !tree.includes(s));
+  // everything that is not a tree spell and not a ladder keeps its own
+  // active/passive effect ("Mighty Power", "Soul Ward", "Blow"...) and shows
+  // in the utility panel
+  const rest = skills.filter((s) => s.ranks.length === 1 && !tree.includes(s));
   // sort every group by first id so the game's own order shows
   for (const list of [starters, improved, tree, rest]) {
     list.sort((a, b) => a.ranks[0].id - b.ranks[0].id);
