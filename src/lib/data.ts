@@ -48,11 +48,26 @@ export type Data = {
   transform: TransformMap;
 };
 
+// fetch + parse with a plain error; an empty body (the dev server restarting
+// mid-refresh returns 200 with no content) used to surface as a raw
+// "JSON.parse: unexpected end of data" — retry once before giving up
+async function loadJson<T>(url: string, attempt = 0): Promise<T> {
+  const res = await fetch(url);
+  const text = await res.text();
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    if (attempt >= 1) throw new Error(`${url}: HTTP ${res.status}, ${text ? "unparseable" : "empty"} body`);
+    await new Promise((r) => setTimeout(r, 400));
+    return loadJson<T>(url, attempt + 1);
+  }
+}
+
 export async function loadData(): Promise<Data> {
   const [maps, points, transform] = await Promise.all([
-    fetch("/data/maps.json").then((r) => r.json()),
-    fetch("/data/points.json").then((r) => r.json()),
-    fetch("/data/transform.json").then((r) => r.json()),
+    loadJson<MapMeta[]>("/data/maps.json"),
+    loadJson<Point[]>("/data/points.json"),
+    loadJson<TransformMap>("/data/transform.json"),
   ]);
   return { maps, points, transform };
 }

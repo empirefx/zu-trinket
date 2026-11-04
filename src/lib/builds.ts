@@ -105,6 +105,11 @@ export function setSelectedId(id: string | null): void {
 
 export type AutosaveAction = "skip" | "overwrite" | "create";
 
+// a fresh build: the default class, nothing equipped
+export function emptyBuild(): BuildSnapshot {
+  return { classId: "swordsman", level: 0, title: "None", gear: {}, talentRanks: {}, pet: null };
+}
+
 export function autosaveDecision(prev: string | null, snap: string, selectedId: string | null): AutosaveAction {
   if (prev === null) return "skip";
   if (selectedId !== null) return "overwrite";
@@ -181,6 +186,15 @@ export function selftest(): void {
     assert(getSelectedId() === "x1", "selection round-trips");
     setSelectedId(null);
     assert(getSelectedId() === null, "null clears selection");
+
+    // the empty starter build round-trips through storage
+    const empty = emptyBuild();
+    const savedEmpty = saveBuild("empty", empty)!;
+    assert(
+      JSON.stringify(listBuilds().find((b) => b.id === savedEmpty.id)!.state) ===
+        JSON.stringify(empty),
+      "empty build round-trips",
+    );
 
     // autosave decision
     assert(autosaveDecision(null, "s", null) === "skip", "first observation skips");

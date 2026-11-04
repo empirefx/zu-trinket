@@ -44,6 +44,11 @@ interface BuildState {
   // the whole build as one value (save) and its reverse (load)
   snapshot: () => BuildSnapshot;
   applyBuild: (s: BuildSnapshot) => void;
+  // the currently selected saved build (null = no build is loaded); the gear
+  // header owns the storage, this only shares the flag so the page can
+  // disable its panels while nothing is loaded
+  selectedId: string | null;
+  setSelectedId: (id: string | null) => void;
 }
 
 const BuildContext = createContext<BuildState | null>(null);
@@ -63,6 +68,7 @@ export function BuildProvider({ children }: { children: ReactNode }) {
   const [pet, setPetState] = useState<PetBuild | null>(null);
   const [gear, setGearState] = useState<Record<string, EquipEntry>>({});
   const [talentRanks, setTalentRanks] = useState<Record<number, number>>({});
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   return (
     <BuildContext.Provider
@@ -106,6 +112,8 @@ export function BuildProvider({ children }: { children: ReactNode }) {
           setTalentRanks(s.talentRanks ?? {});
           setPetState(s.pet ?? null);
         },
+        selectedId,
+        setSelectedId,
       }}
     >
       {children}

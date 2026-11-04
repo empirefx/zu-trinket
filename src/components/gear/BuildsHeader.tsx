@@ -3,6 +3,7 @@
 // Autosave / delete / selection logic is the old BuildsBar's.
 import { useEffect, useRef, useState, type Key, type ReactNode } from "react";
 import {
+  Alert,
   Button,
   Chip,
   Description,
@@ -19,6 +20,7 @@ import {
   autosaveDecision,
   type BuildSnapshot,
   deleteBuild,
+  emptyBuild,
   getSelectedId,
   listBuilds,
   MAX_BUILDS,
@@ -28,9 +30,9 @@ import {
 } from "../../lib/builds";
 
 export function BuildsHeader({ children }: { children?: ReactNode }) {
-  const { snapshot, applyBuild, classId, level, title, gear, talentRanks, pet } = useBuild();
+  const { snapshot, applyBuild, classId, level, title, gear, talentRanks, pet, selectedId, setSelectedId } = useBuild();
   const [builds, setBuilds] = useState<SavedBuild[]>(() => listBuilds());
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+
   const [nameInput, setNameInput] = useState("");
   const [pendingDelete, setPendingDelete] = useState<SavedBuild | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -91,9 +93,25 @@ export function BuildsHeader({ children }: { children?: ReactNode }) {
 
   const atCap = builds.length >= MAX_BUILDS;
 
+  // "+ Create build" always starts from an empty build
   const handleNew = () => {
     if (atCap) return;
-    const saved = saveBuild("Build " + (builds.length + 1), snapshot());
+    const saved = saveBuild("Build " + (builds.length + 1), emptyBuild());
+    if (saved) {
+      apply(saved.state);
+      setBuilds(listBuilds());
+      select(saved.id);
+      setStatus(null);
+    } else {
+      setStatus("Could not save — storage unavailable");
+    }
+  };
+
+  // duplicate the selected build under "<name> (copy)"
+  const handleClone = () => {
+    const cur = builds.find((b) => b.id === selectedId);
+    if (!cur || atCap) return;
+    const saved = saveBuild(cur.name + " (copy)", cur.state);
     if (saved) {
       setBuilds(listBuilds());
       select(saved.id);
@@ -147,11 +165,28 @@ export function BuildsHeader({ children }: { children?: ReactNode }) {
           )}
         </div>
 
-        {/* Middle: the section tabs (GearPage's Tabs.List) */}
-        {children}
+        {/* Middle: the section tabs — inert until a build is selected */}
+        <div className="col-span-2 md:col-span-1 order-3 md:order-2 flex flex-col items-center gap-1">
+          <div
+            className={`w-full ${selectedId === null ? "opacity-40" : ""}`}
+            inert={selectedId === null || undefined}
+          >
+            {children}
+          </div>
+        </div>
 
         {/* Right: delete the selected build + the builds dropdown */}
         <div className="col-span-2 md:col-span-1 order-2 md:order-3 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={selectedId === null || atCap}
+            onClick={handleClone}
+          >
+            <Chip size="md" color="warning" variant="soft" className="text-sm">
+              Clone
+            </Chip>
+          </button>
           <button
             type="button"
             className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
@@ -170,7 +205,7 @@ export function BuildsHeader({ children }: { children?: ReactNode }) {
             <Button variant="outline" size="md" className="rounded-full h-9 px-5 text-sm border-2">
               Builds
             </Button>
-            <Dropdown.Popover className="min-w-[260px]">
+            <Dropdown.Popover className="min-w-[260px] max-w-[320px]">
               <Dropdown.Menu onAction={menuAction} disabledKeys={atCap ? ["create"] : []}>
                 <Dropdown.Section>
                   <Header>
@@ -184,8 +219,8 @@ export function BuildsHeader({ children }: { children?: ReactNode }) {
                     const lvl = b.state?.level ?? (b as { level?: number }).level ?? 0;
                     return (
                       <Dropdown.Item key={b.id} id={b.id} textValue={b.name}>
-                        <div className="flex flex-col min-w-0">
-                          <Label className="truncate">{b.name}</Label>
+                        <div className="flex flex-col min-w-0 w-full">
+                          <Label className="truncate max-w-full">{b.name}</Label>
                           <Description>{CLASS_NAMES[cls] ?? cls} · Lv {lvl}</Description>
                         </div>
                       </Dropdown.Item>
@@ -203,6 +238,21 @@ export function BuildsHeader({ children }: { children?: ReactNode }) {
           </Dropdown>
         </div>
       </header>
+
+      {/* Fixed directions notice while no build is loaded */}
+      {selectedId === null && (
+        <div className="fixed bottom-10 right-10 z-50 w-[420px]">
+          <Alert status="warning">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>Create or select a build to start</Alert.Title>
+              <Alert.Description>
+                Use the Builds menu to create, clone or pick one.
+              </Alert.Description>
+            </Alert.Content>
+          </Alert>
+        </div>
+      )}
 
       <Modal
         isOpen={pendingDelete !== null}

@@ -7,7 +7,7 @@ import { PlayerStats } from "../../components/gear/PlayerStats";
 import { PetGear } from "../../components/gear/PetGear";
 import { PetStats } from "../../components/gear/PetStats";
 import { TalentTrees } from "../../components/gear/TalentTrees";
-import { BuildProvider } from "../../components/gear/BuildContext";
+import { BuildProvider, useBuild } from "../../components/gear/BuildContext";
 import { BuildsHeader } from "../../components/gear/BuildsHeader";
 
 const SECTIONS = [["character", "Character"], ["talent", "Talent"], ["pet", "Pet"]] as const;
@@ -21,6 +21,21 @@ function Split({ left, right }: { left: ReactNode; right: ReactNode }) {
         <div className="p-4 sm:p-6 border-t md:border-t-0 md:border-l border-separator">{right}</div>
       </Card.Content>
     </Card>
+  );
+}
+
+// Panels are inert + dimmed while no build is selected (useBuild from the
+// BuildProvider in scope; overlays render as portals and are unaffected).
+function Panel({ children }: { children: ReactNode }) {
+  const { selectedId } = useBuild();
+  return (
+    <div
+      className={selectedId === null ? "opacity-40 pointer-events-none" : ""}
+      inert={selectedId === null || undefined}
+      data-testid="gear-panel-gate"
+    >
+      {children}
+    </div>
   );
 }
 
@@ -42,29 +57,34 @@ export function GearPage() {
             variant="secondary"
             className="flex flex-col gap-4"
           >
-            {/* the builds header carries the section tabs in its middle slot */}
+            {/* the builds header carries the section tabs in its middle slot;
+                it inerts + dims the tabs until a build is selected */}
             <BuildsHeader>
-              <div className="col-span-2 md:col-span-1 order-3 md:order-2 flex justify-center">
-                <Tabs.List aria-label="Sections" className="w-full md:w-[380px]">
-                  {SECTIONS.map(([id, label]) => (
-                    <Tabs.Tab key={id} id={id} className="flex-1 h-9 text-sm cursor-pointer">
-                      {label}
-                      <Tabs.Indicator />
-                    </Tabs.Tab>
-                  ))}
-                </Tabs.List>
-              </div>
+              <Tabs.List aria-label="Sections" className="w-full md:w-[380px]">
+                {SECTIONS.map(([id, label]) => (
+                  <Tabs.Tab key={id} id={id} className="flex-1 h-9 text-sm cursor-pointer">
+                    {label}
+                    <Tabs.Indicator />
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
             </BuildsHeader>
 
             {/* one panel per tab, full width under the header */}
             <Tabs.Panel id="character">
-              <Split left={<CharacterGear />} right={<PlayerStats />} />
+              <Panel>
+                <Split left={<CharacterGear />} right={<PlayerStats />} />
+              </Panel>
             </Tabs.Panel>
             <Tabs.Panel id="talent">
-              <TalentTrees />
+              <Panel>
+                <TalentTrees />
+              </Panel>
             </Tabs.Panel>
             <Tabs.Panel id="pet">
-              <Split left={<PetGear />} right={<PetStats />} />
+              <Panel>
+                <Split left={<PetGear />} right={<PetStats />} />
+              </Panel>
             </Tabs.Panel>
           </Tabs>
         </main>
