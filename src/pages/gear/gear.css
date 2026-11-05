@@ -741,6 +741,14 @@
   --zs: 1.5;
 }
 
+/* a skill the character cannot use yet: the level does not reach its first
+   rank, or the talent point that teaches it has not been spent.  Only the
+   icon dims - same rule as .talent-node.locked - so the tooltip, which still
+   names the rank/level it waits for, stays readable */
+.gear-page .sk-tile.sk-locked .sk-icon {
+  opacity: 0.3;
+}
+
 .gear-page .sk-tile:hover .sk-icon,
 .gear-page .sk-tile:focus-visible .sk-icon {
   outline: 1px solid #e8c36a;

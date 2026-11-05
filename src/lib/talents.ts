@@ -63,6 +63,22 @@ export function talentPoints(level: number): number {
 
 let cache: Promise<Record<string, ClassTalents>> | null = null;
 
+// the talent node that grants a spell: the node carries the spell's own name
+// ("Expose Weakness"), or its rank-1 intro opens with "Teaches you <spell>".
+// Every shipped tree spell resolves to exactly one node this way; the base
+// "Shapeshift" is the one spell with no node (no point teaches it).
+export function taughtBy(trees: ClassTalents | undefined): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const tree of trees ?? []) {
+    for (const node of tree.nodes) {
+      map.set(node.name, node.id);
+      const m = /^Teaches you (?:the )?(.+?) \(/.exec(node.intros[0] ?? "");
+      if (m) map.set(m[1].trim(), node.id);
+    }
+  }
+  return map;
+}
+
 export function loadTalents(): Promise<Record<string, ClassTalents>> {
   if (!cache) {
     cache = fetch("/data/talents.json").then(

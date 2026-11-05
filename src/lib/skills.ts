@@ -29,8 +29,8 @@ export type Skill = {
   desc: string;
   // the spell ids the ranks cover, rank 0 first
   ids: number[];
-  // one row per rank: the upgrade cost (skill points; -1 = no further rank)
-  // + the effect number
+  // one row per rank: the character level the rank needs (SPELLS YearsNeed,
+  // the field the client's own upgrade check reads) + the effect number
   ranks: SkillRank[];
   // the per-rank effect values decoded from the record's effect-slot
   // columns (rank 0 first, parallel to ranks/ids)
@@ -66,8 +66,21 @@ export function resolveDesc(
     .replace(/\$f_ta|\$f_ga/g, sec(vals?.dur_a ?? 0));
 }
 
-let cache: Promise<Skill[]> | null = null;
+// the rank the character's level has reached: the ranks of a ladder are
+// learned in order, so the walk stops at the first rank whose level is not
+// met yet (need > 0 && need > level).  need 0 is a rank every level has, a
+// negative need (never shipped) counts as no requirement.  -1 = no rank at
+// all, which is what a skill the level does not reach yet reports (the tile
+// greys out).
+export function metRank(skill: Skill, level: number): number {
+  for (let i = 0; i < skill.ranks.length; i++) {
+    const need = skill.ranks[i].need;
+    if (need > 0 && need > level) return i - 1;
+  }
+  return skill.ranks.length - 1;
+}
 
+let cache: Promise<Skill[]> | null = null;
 export function loadSkills(): Promise<Skill[]> {
   if (!cache) {
     cache = fetch("/data/skills.json").then(
