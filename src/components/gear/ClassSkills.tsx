@@ -8,8 +8,9 @@ import {
   type Skill,
   type SkillRank,
 } from "../../lib/skills";
-import { loadTalents, taughtBy, type ClassTalents } from "../../lib/talents";
+import { loadTalents, spellAffects, taughtBy, type ClassTalents, type SpellAffect } from "../../lib/talents";
 import { SPRITE_CLASS } from "./gearSprites";
+import { iconClass } from "../../lib/icons";
 import { TipText } from "./tipText";
 
 // the skill icons live in the per-class gear sheets (zs-JX, ...); the sprite
@@ -29,14 +30,26 @@ const ICON_CLS = (iconName: string | null): string =>
 // point and not a level, so they keep the full ladder.  A level that reaches
 // no rank yet describes the first one - its requirement is what the greyed
 // out tile is waiting for.
-function SkillTip({ skill, rankIdx }: { skill: Skill; rankIdx: number | null }) {
+function SkillTip({
+  skill,
+  rankIdx,
+  affects,
+}: {
+  skill: Skill;
+  rankIdx: number | null;
+  affects?: SpellAffect[];
+}) {
   const i = rankIdx === null ? 0 : Math.max(rankIdx, 0);
   const r = skill.ranks[i];
+  // the talent points spent on the "Increases damage of ..." nodes that
+  // change this spell scale its damage
+  const dmg = affects?.reduce((sum, a) => sum + a.dmg, 0) ?? 0;
+  const mul = dmg > 0 ? 1 + dmg / 100 : 1;
   const line = (x: SkillRank) => {
     const needLabel = x.need > 0 ? `learn at level ${x.need}` : x.need === 0 ? "free" : "final rank";
     return (
       <div key={x.rank}>
-        rank {x.rank + 1} ({needLabel}): {+x.effect.toFixed(1)}
+        rank {x.rank + 1} ({needLabel})
       </div>
     );
   };
@@ -45,16 +58,26 @@ function SkillTip({ skill, rankIdx }: { skill: Skill; rankIdx: number | null }) 
       <b>{skill.name}</b>
       {skill.desc ? (
         <div className="tip-body">
-          <TipText text={resolveDesc(skill.desc, r.effect, skill.vals?.[i])} />
+          <TipText text={resolveDesc(skill.desc, r.effect, skill.vals?.[i], mul)} />
         </div>
       ) : (
         <div className="tip-body text-muted">No description in the shipped data.</div>
       )}
+      {!!affects?.length && (
+        <div className="sk-affects">
+          {affects.map((a) => (
+            <div className="sk-affect" key={a.node.id}>
+              <span className={"gear-icon zs " + (iconClass(a.node.icon) ?? "")} />
+              <TipText text={a.text} />
+            </div>
+          ))}
+        </div>
+      )}
       {skill.ranks.length > 1 && (
         <div className="tip-meta">{rankIdx === null ? skill.ranks.map(line) : line(r)}</div>
       )}
-      {skill.ranks.length === 1 && (
-        <div className="tip-meta">{r.need < 0 ? "single skill, no upgrades" : line(r)}</div>
+      {skill.ranks.length === 1 && r.need > 0 && (
+        <div className="tip-meta">learn at level {r.need}</div>
       )}
     </>
   );
@@ -143,6 +166,12 @@ export function ClassSkills() {
   const groups = useMemo(() => groupSkills(skills, treeRefs), [skills, treeRefs]);
   // the talent node that grants each tree spell (name -> node id)
   const grants = useMemo(() => taughtBy(talents[classId]), [talents, classId]);
+  // the learned talent nodes that change each spell: their icon + text, and
+  // the damage bonus they give it
+  const affects = useMemo(
+    () => spellAffects(talents[classId], skills.map((s) => s.name), talentRanks),
+    [talents, classId, skills, talentRanks],
+  );
 
   return (
     <div className="sk-panel" data-testid="class-skills">
@@ -169,7 +198,7 @@ export function ClassSkills() {
                   </div>
                   <div className="sk-tile-label">{sk.name}</div>
                   <div className="hover-tip" role="tooltip">
-                    <SkillTip skill={sk} rankIdx={rankIdx} />
+                    <SkillTip skill={sk} rankIdx={rankIdx} affects={affects.get(sk.name)} />
                   </div>
                 </div>
               );

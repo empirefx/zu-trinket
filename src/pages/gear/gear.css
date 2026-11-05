@@ -749,6 +749,55 @@
   opacity: 0.3;
 }
 
+/* the learned talent nodes that change a spell: the node's own icon and the
+   node's own text (the bonus it gives the spell).  The row is a plain block -
+   the icon is positioned in the middle of it, so the text wraps beside it
+   without the icon stretching the line box */
+.gear-page .sk-affects {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.gear-page .sk-affect {
+  position: relative;
+  padding-left: 36px;   /* room for the icon */
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.gear-page .sk-affect .gear-icon {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  --zs: 0.9; /* 29px in the tooltip */
+}
+
+/* the skill tooltip reads small next to the wide talent list: a bigger body
+   and roomier rows */
+.gear-page .sk-tile .hover-tip {
+  font-size: 13px;
+  padding: 8px 10px;
+}
+
+.gear-page .sk-tile .hover-tip .tip-num,
+.gear-page .sk-tile .hover-tip .tip-skill {
+  font-size: 14px;
+}
+
+.gear-page .sk-tile .tip-meta {
+  margin-top: 8px;
+}
+
+/* a skill tooltip that lists the talent nodes needs more room: the shared
+   .hover-tip caps at 260px, the node texts are a full sentence */
+.gear-page .hover-tip:has(.sk-affects) {
+  max-width: min(420px, calc(100vw - 24px));
+}
+
 .gear-page .sk-tile:hover .sk-icon,
 .gear-page .sk-tile:focus-visible .sk-icon {
   outline: 1px solid #e8c36a;

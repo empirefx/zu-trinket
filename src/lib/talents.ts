@@ -79,6 +79,77 @@ export function taughtBy(trees: ClassTalents | undefined): Map<string, number> {
   return map;
 }
 
+// A talent node that changes a spell: its own text talks about the spell by
+// name ("Increases damage of Dragon Strike, Double Dragon Strike and Dragon
+// Slay spells by 10%").  The node that only TEACHES a spell ("Teaches you
+// Expose Weakness") counts too - that is where the spell comes from.
+export type SpellAffect = {
+  node: TalentNode;
+  // the text of the learned rank (the node's own description)
+  text: string;
+  // the damage bonus the node gives the spell in % (0 when it is not a damage
+  // talent): these scale the spell's damage
+  dmg: number;
+};
+
+// "Increases damage of ... by 10%" / "Increases the damage of ... by 3.8%" /
+// "Increases the damage dealt by your ... spell by 22%" - the only talent
+// texts that scale the spell's own damage number
+const DMG_RE = /Increases (?:the )?damage(?: dealt)? (?:of|by) .*? by (\d+(?:\.\d+)?)%/i;
+
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// the spells a talent text talks about: the names as whole words, never the
+// "SS." copy of another skill ("Learn skills: SS.Thunder Shot"), and never a
+// name that only shows up inside a longer one ("Dragon Strike" inside "Double
+// Dragon Strike" - but on its own it does count)
+function mentioned(text: string, names: { name: string; re: RegExp }[]): string[] {
+  const claimed: [number, number][] = [];
+  const hits: string[] = [];
+  // the longest name first, so its span is claimed before the shorter ones
+  for (const n of [...names].sort((a, b) => b.name.length - a.name.length)) {
+    let found = false;
+    for (const m of text.matchAll(n.re)) {
+      const from = m.index!;
+      const to = from + m[0].length;
+      if (claimed.some(([c, d]) => from < d && to > c)) continue; // inside a longer name
+      claimed.push([from, to]);
+      found = true;
+    }
+    if (found) hits.push(n.name);
+  }
+  return hits;
+}
+
+// the learned talent nodes that change each spell
+export function spellAffects(
+  trees: ClassTalents | undefined,
+  names: string[],
+  ranks: Record<number, number>,
+): Map<string, SpellAffect[]> {
+  const res = names.map((name) => ({
+    name,
+    // the lookbehind keeps the "SS." copies out (they are other spells)
+    re: new RegExp(`(?<!SS\\.)\\b${escapeRe(name)}\\b`, "g"),
+  }));
+  const out = new Map<string, SpellAffect[]>();
+  for (const tree of trees ?? []) {
+    for (const node of tree.nodes) {
+      const rank = ranks[node.id] ?? 0;
+      if (rank <= 0) continue; // only a learned node changes anything
+      const text = (node.intros[Math.min(rank, node.intros.length) - 1] ?? "").trim();
+      const m = DMG_RE.exec(text);
+      const dmg = m ? Number(m[1]) : 0;
+      for (const nm of mentioned(text, res)) {
+        const list = out.get(nm) ?? [];
+        list.push({ node, text, dmg });
+        out.set(nm, list);
+      }
+    }
+  }
+  return out;
+}
+
 export function loadTalents(): Promise<Record<string, ClassTalents>> {
   if (!cache) {
     cache = fetch("/data/talents.json").then(

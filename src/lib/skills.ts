@@ -44,10 +44,13 @@ export type Skill = {
 // EffectBMeantime.  Every one of those tokens sits where a number goes in the
 // shipped sentence ("10 times within 20 sec"), so they resolve to the bare
 // number and a slot the row leaves empty prints "?" instead of a made-up one.
+// dmgMul scales the spell's own damage ($d_a) by the talent points spent on
+// the "Increases damage of ..." nodes that change it.
 export function resolveDesc(
   desc: string,
   effect: number,
   vals?: SkillVals,
+  dmgMul = 1,
 ): string {
   if (!desc.includes("$")) return desc;
   const num = (f: number) => `${+(f * 100).toFixed(1).replace(/\.0$/, "")}%`;
@@ -59,7 +62,7 @@ export function resolveDesc(
     .replace(/\$\$_b/g, vals && vals.b > 0 ? num(vals.b) : "+?")
     .replace(/\$d_na/g, times(vals?.count ?? 0))
     .replace(/\$d_nb/g, times(vals?.count_b ?? 0))
-    .replace(/\$d_ga|\$d_a/g, raw(effect))
+    .replace(/\$d_ga|\$d_a/g, raw(effect * dmgMul))
     .replace(/\$f_ia/g, sec(vals?.mean_a ?? 0))
     .replace(/\$f_ib/g, sec(vals?.mean_b ?? 0))
     .replace(/\$f_tb/g, sec(vals?.dur_b ?? 0))
