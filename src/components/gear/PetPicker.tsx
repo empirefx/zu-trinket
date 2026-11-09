@@ -3,11 +3,19 @@ import { usePets } from "../../hooks/usePets";
 import { sortSpecies } from "../../lib/pets";
 import { petIconClass } from "../../lib/icons";
 
-// The pet picker: species grouped by the egg that hatches them
-// (Primary / Junior / Senior, then the rest), each group sorted by aptitude
-// (lower first, the no-egg species last).  The aptitude shown is the egg
-// tooltip's range - the real roll is server-side, hence "(est.)".
-const GROUP_ORDER = ["Primary", "Junior", "Senior", "Other"];
+// The egg windows in the game's own wording (live observation, 2026-11-09).
+// Each egg tooltip lists which pets it can hatch — cumulative, so pets repeat
+// across groups (the Junior egg also hatches three Primary pets, the Senior
+// egg one Junior pet). The shipped data's eggKind only marks the pet's own
+// tier, so these hatch lists are hand-kept here.
+const EGG_GROUPS: [string, string[]][] = [
+  ["Primary Pet", ["Ursus", "Nar Whale", "Aquamarine Hydralion", "Fiery Howler", "Flying Pig"]],
+  ["Junior Pet", ["Aquamarine Hydralion", "Fiery Howler", "Flying Pig", "Talbuk", "Taiji Beast"]],
+  ["Senior Pet", ["Taiji Beast", "Fiery Dancer", "Ink Kylin", "Shadow Foal"]],
+];
+// the Other group's exclusions (live data): an egg-only record with no pet,
+// and egg-only pet records that repeat a listed or other pet's name
+const EXCLUDED = new Set(["Dark Phoenix Egg"]);
 
 interface PetPickerProps {
   onClose: () => void;
@@ -21,16 +29,24 @@ export function PetPicker({ onClose, onPick, onClear }: PetPickerProps) {
 
   const groups = useMemo(() => {
     if (!pets) return [];
-    const byKind = new Map<string, typeof pets.species>();
-    for (const s of pets.species) {
-      const k = s.eggKind || "Other";
-      if (!byKind.has(k)) byKind.set(k, []);
-      byKind.get(k)!.push(s);
-    }
-    const ordered = [...byKind.keys()].sort(
-      (a, b) => GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b) || a.localeCompare(b),
+    // the same name keeps its first record (the shipped Other group repeats
+   // some names)
+    const byName = new Map<string, (typeof pets.species)[number]>();
+    for (const s of pets.species) if (!byName.has(s.name)) byName.set(s.name, s);
+
+    const listed = new Set(EGG_GROUPS.flatMap(([, names]) => names));
+    const other = sortSpecies(
+      pets.species.filter(
+        (s) => !EXCLUDED.has(s.name) && !listed.has(s.name) && byName.get(s.name) === s,
+      ),
     );
-    return ordered.map((k) => ({ kind: k, rows: sortSpecies(byKind.get(k)!) }));
+    return [
+      ...EGG_GROUPS.map(([label, names]) => ({
+        label,
+        rows: names.map((n) => byName.get(n)).filter((s) => s !== undefined),
+      })),
+      { label: "Other", rows: other },
+    ];
   }, [pets]);
 
   return (
@@ -38,7 +54,6 @@ export function PetPicker({ onClose, onPick, onClear }: PetPickerProps) {
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           Choose Pet
-          <span className="modal-sub"> — aptitude (est.)</span>
         </div>
         <div className="modal-list">
           {!pets && <div className="picker-note">Loading pets…</div>}
@@ -48,18 +63,19 @@ export function PetPicker({ onClose, onPick, onClear }: PetPickerProps) {
             </div>
           )}
           {groups.map((g) => (
-            <div key={g.kind}>
-              <div className="group">{g.kind} · {g.rows.length}</div>
+            <div key={g.label}>
+              <div className="group">{g.label} · {g.rows.length}</div>
               {g.rows.map((s) => {
                 const icon = petIconClass(s.icon);
+                // the egg tooltip promises 2300 for the pets it has no range
+                // for (the real roll is server-side, hence "(est.)")
+                const apt = s.apt ?? [2300, 2300];
                 return (
                   <div key={s.id} className="item-row" onClick={() => onPick(s.id)}>
                     {icon ? <span className={"gear-icon zs " + icon} /> : null}
                     <span className="item-name">{s.name}</span>
                     <span className="lv">
-                      {s.apt
-                        ? `apt ${s.apt[0]}${s.apt[1] !== s.apt[0] ? `–${s.apt[1]}` : ""}`
-                        : "apt —"}
+                      {`apt ${apt[0]}${apt[1] !== apt[0] ? `–${apt[1]}` : ""}`}
                     </span>
                   </div>
                 );

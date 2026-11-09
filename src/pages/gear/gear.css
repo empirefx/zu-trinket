@@ -850,6 +850,10 @@
 }
 .gear-page .item-tip p { margin: 0; }
 .gear-page .item-tip .center { text-align: center; }
+/* the pet tooltip's head: name + Fighting Power centered and larger, the
+   power in the game's orange; the grade row sits right under the power */
+.gear-page .item-tip .tp-name { font-size: 16px; font-weight: 600; }
+.gear-page .item-tip .tp-fp { font-size: 16px; color: #ff9933; }
 .gear-page .item-tip .gap { margin-top: 8px; }
 .gear-page .item-tip .indent { padding-left: 12px; }
 .gear-page .item-tip .o { color: #ff9933; }

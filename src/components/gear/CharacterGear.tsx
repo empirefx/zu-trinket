@@ -7,10 +7,12 @@ import { GearTooltip } from "./GearTooltip";
 import { GearPicker } from "./GearPicker";
 import { GearDrawer } from "./GearDrawer";
 import { PetPicker } from "./PetPicker";
+import { glyph, glyphColor } from "./GearDrawer";
 import { CLASS_NAMES, SLOT_ITEMS } from "./gearSlots";
 import { iconClass, petIconClass } from "../../lib/icons";
 import { usePets } from "../../hooks/usePets";
-import { useBuild, type ClassId } from "./BuildContext";
+import { useBuild, type ClassId, type PetBuild } from "./BuildContext";
+import { petApt, petTooltip, petPower, icons as petIcons, type Stats, type Aptitudes } from "../../lib/pets";
 import { TITLES } from "./titles";
 import type { EquipEntry, Item } from "../../lib/items";
 
@@ -39,6 +41,78 @@ const BOTTOM_SLOTS = [
 ];
 
 const TITLES_OPTIONS = [{ name: "None", effect: "" }, ...TITLES];
+
+// The pet-slot hover tooltip in the game's own format (live sample:
+// zu-re/evidence/pet_tooltip.txt): name, Fighting Power, level, the five
+// "+X" stats, aptitudes, assigned spell ranks and the four gear names.
+// Uses the .item-tip card (same background/border corner/white text as the
+// gear tooltip). All rows are (est.): the doc-fitted model of
+// docs/pet-stat-calculations.md builds the tooltip (fresh formula + Pet
+// Bolus roll + gear), the game's own petPower builds Fighting Power, and
+// the sun/moon/star row is the icon estimate (own stats, no gear).
+function PetTip({ pets, pet }: { pets: NonNullable<ReturnType<typeof usePets>>; pet: NonNullable<PetBuild> }) {
+  const species = pets.species.find((s) => s.id === pet.speciesId);
+  // the egg-range midpoints stand in for the server's aptitude roll (est.)
+  const A = petApt(pet.level, species?.apt ?? null);
+  const cur = A?.[0] ?? 0;
+  const apt: Aptitudes = { life: cur, mana: cur, attack: cur, pd: cur, md: cur };
+  const gearList = [0, 1, 2, 3].map((i) => pet.gear[i]).filter(Boolean);
+  const gear: Partial<Stats> = {
+    atk: gearList.reduce((s, g) => s + (g.atk ?? 0), 0),
+    pd: gearList.reduce((s, g) => s + (g.pd ?? 0), 0),
+    md: gearList.reduce((s, g) => s + (g.md ?? 0), 0),
+  };
+  const { own, total } = petTooltip(pet.level, apt, { gear });
+  const power = petPower({
+    level: pet.level,
+    pot: [cur, cur, cur, cur, cur],
+    val: [total.hp, total.mp, total.atk, total.pd, total.md],
+    spells: Object.values(pet.spells),
+    spellPower: pets.spellPower,
+  });
+  const ic = petIcons(pet.level, own);
+  const spells = [0, 1, 2, 3, 4, 5, 6, 7]
+    .map((slot) => pet.spells[slot])
+    .filter((a) => a && a.rank > 0)
+    .map((a) => ({ name: pets.spells[a.kind]?.name ?? "?", rank: a.rank }));
+  return (
+    <div className="item-tip">
+      <p className="center tp-name">{species?.name ?? "?"}</p>
+      <p className="center tp-fp">Fighting Power: {power}</p>
+      {ic && (
+        <p className="star center">
+          {Array.from({ length: ic.count }, (_, k) => {
+            const gi = ic.tier === "star" ? 0 : ic.tier === "moon" ? 10 : 20;
+            return <span key={k} style={{ color: glyphColor(gi) }}>{glyph(gi)}</span>;
+          })}
+        </p>
+      )}
+      <p>Level: {pet.level}</p>
+      <p>Health: +{total.hp}</p>
+      <p>Mana: +{total.mp}</p>
+      <p>Attack: +{total.atk}</p>
+      <p>PD: +{total.pd}</p>
+      <p>MD: +{total.md}</p>
+      <p className="gap">Life aptitude: {A ? cur.toLocaleString() : "—"}</p>
+      <p>Mana aptitude: {A ? cur.toLocaleString() : "—"}</p>
+      <p>Attack aptitude: {A ? cur.toLocaleString() : "—"}</p>
+      <p>PD aptitude: {A ? cur.toLocaleString() : "—"}</p>
+      <p>MD aptitude: {A ? cur.toLocaleString() : "—"}</p>
+      {spells.length > 0 && (
+        <>
+          <p className="gap">{spells[0].name} level: {spells[0].rank}</p>
+          {spells.slice(1).map((s, i) => <p key={i}>{s.name} level: {s.rank}</p>)}
+        </>
+      )}
+      {gearList.length > 0 && (
+        <>
+          <p className="gap">Equipment1: {gearList[0].name}</p>
+          {gearList.slice(1).map((g, i) => <p key={i}>Equipment{i + 2}: {g.name}</p>)}
+        </>
+      )}
+    </div>
+  );
+}
 
 export function CharacterGear() {
   const { classId, level, title, hasPet, pet, gear, setClassId, setLevel, setTitle, setPet, clearPet, setGear } = useBuild();
@@ -138,6 +212,7 @@ export function CharacterGear() {
             value={petSpecies?.name}
             icon={petIconClass(petSpecies?.icon)}
             onClick={() => setPetPicking(true)}
+            tip={hasPet && pet && pets ? <PetTip pets={pets} pet={pet} /> : undefined}
           />
         </GearColumn>
       </div>

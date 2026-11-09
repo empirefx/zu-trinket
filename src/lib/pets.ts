@@ -54,6 +54,9 @@ export type PetData = {
   curve: PetCurveRow[];
   // [stage, maxAptitude, the pet level that reaches it] from PETEVOLVE
   evolve: [number, number, number][];
+  // the pet-power spell coefficients: COMBAT_RATION.ZU1 rows 54..61, one per
+  // spell kind 0..7 (read by the client's pet power routine, 0x101d8c60)
+  spellPower: number[];
   // false when the group-7 MoveSpeed column held garbage (Speed+ then shows "—")
   movesSane: boolean;
 };
@@ -84,35 +87,171 @@ export function maxGearLevel(gear: PetGearItem[]): number {
   return gear.reduce((m, g) => Math.max(m, g.req), 0);
 }
 
-// The pet stat rows (zu-re/docs/pet-system.md §8): the RACE group-7 curve at
-// the pet level, scaled by aptitude / maxAptitude.  (est.) - the shipped data
-// gives the curve and the aptitude ladder but not the client's exact bonus
-// formula; the midpoints of the egg ranges stand in for the server's roll.
-export type PetStats = {
-  hpBonus: number | null;
-  mpBonus: number | null;
-  atkBonus: number | null;
-  pdBonus: number | null;
-  mdBonus: number | null;
-  // [current (est.), max] for the five aptitude rows; null = no egg range
-  apt: [number, number] | null;
+// ---------- The pet stat system (zu-re/docs/pet-system.md §8) ----------
+
+// The fitted stat model of docs/pet-stat-calculations.md (8 live pets,
+// levels 0-80). This is a FIT, not the client's own formula - the client
+// only displays server-fed values (pet_map_user_a.c). Rule of the house:
+// label every row built on it "(est.)". Fighting Power stays petPower below.
+
+export type Stat = "hp" | "mp" | "atk" | "pd" | "md";
+export type Stats = Record<Stat, number>;
+export type Aptitudes = { life: number; mana: number; attack: number; pd: number; md: number };
+export type PanelSet = "A" | "B";
+export type PetIcon = { tier: "sun" | "moon" | "star"; count: number } | null;
+
+const STATS: Stat[] = ["hp", "mp", "atk", "pd", "md"];
+const zeroStats = (): Stats => ({ hp: 0, mp: 0, atk: 0, pd: 0, md: 0 });
+
+// every fresh pet at level 0 (before any Pet Bolus roll), whatever the tier
+export const BASE: Stats = { hp: 42, mp: 47, atk: 110, pd: 75, md: 50 };
+
+// Levels 0-20: stat = base + L*(a+b*x) + L^2*(c+d*x) + e*L^3 where x = the
+// aptitude feeding the stat (tot = all five scaled by / 1000)
+const X_OF: Record<Stat, "tot" | "mana" | "atk" | "pd"> = { hp: "tot", mp: "mana", atk: "atk", pd: "pd", md: "tot" };
+const xVal = (x: string, a: Aptitudes) =>
+  x === "tot" ? (a.life + a.mana + a.attack + a.pd + a.md) / 1000
+  : x === "mana" ? a.mana / 1000 : x === "atk" ? a.attack / 1000 : a.pd / 1000;
+
+const COEF: Record<Stat, { a: number; b: number; c: number; d: number; e: number }> = {
+  hp: { a: 0.6496, b: 0.438, c: 0.024, d: 0.0132, e: 0.0029 },
+  mp: { a: -1.5406, b: 3.5751, c: 0.1875, d: -0.0005, e: 0.0031 },
+  atk: { a: -9.4628, b: 8.5791, c: -0.0439, d: 0.029, e: 0 },
+  pd: { a: -4.0741, b: 4.5388, c: 0.0718, d: 0.0304, e: -0.0048 },
+  md: { a: -2.6189, b: 0.6531, c: 0, d: 0, e: 0 },
+};
+// Above level 20: stat = stat(20) + (L-20) * (p + q*x) (fitted on 3 pets,
+// L30-80; up to ~8% error at L30, do not trust beyond 80)
+const LATE: Record<Stat, { p: number; q: number }> = {
+  hp: { p: -2.298, q: 1.474 }, mp: { p: -2.574, q: 8.203 }, atk: { p: -10.912, q: 9.993 },
+  pd: { p: -3.232, q: 5.194 }, md: { p: -1.982, q: 0.665 },
 };
 
-export function petStats(
+// un-rolled, un-geared tooltip stats (not rounded)
+export function freshStats(level: number, apt: Aptitudes): Stats {
+  const out = zeroStats(), L = Math.min(level, 20);
+  for (const s of STATS) {
+    const c = COEF[s], x = xVal(X_OF[s], apt);
+    let v = BASE[s] + L * (c.a + c.b * x) + L ** 2 * (c.c + c.d * x) + c.e * L ** 3;
+    if (level > 20) v += (level - 20) * (LATE[s].p + LATE[s].q * x);
+    out[s] = v;
+  }
+  return out;
+}
+
+// own = fresh + Pet Bolus roll offset (rounded, <= 0 per stat, level-
+// invariant; used for icons), total = own + gear flat bonuses (used for the
+// shown tooltip, the panel and Fighting Power)
+export function petTooltip(
   level: number,
-  apt: [number, number] | null,
-  curve: PetCurveRow[],
-): PetStats {
-  const row = curve[Math.max(0, Math.min(level, curve.length - 1))];
-  const cur = apt ? (apt[0] + apt[1]) / 2 : null;
-  const max = maxAptitude(level);
-  const b = (v: number) => (cur == null ? null : Math.round((v * cur) / max));
-  return {
-    hpBonus: b(row[3]),
-    mpBonus: b(row[4]),
-    atkBonus: b((row[1] + row[2]) / 2),
-    pdBonus: b(row[5]),
-    mdBonus: b(row[6]),
-    apt: cur == null ? null : [cur, max],
-  };
+  apt: Aptitudes,
+  opts: { offset?: Partial<Stats>; gear?: Partial<Stats> } = {},
+): { own: Stats; total: Stats } {
+  const f = freshStats(level, apt), own = zeroStats(), total = zeroStats();
+  for (const s of STATS) {
+    own[s] = Math.round(f[s] + (opts.offset?.[s] ?? 0));
+    total[s] = own[s] + (opts.gear?.[s] ?? 0);
+  }
+  return { own, total };
+}
+
+// roll offset from an observed tooltip without gear (exact at level 0,
+// inherits the formula error above)
+export function rollOffset(observedOwn: Stats, level: number, apt: Aptitudes): Stats {
+  const f = freshStats(level, apt), out = zeroStats();
+  for (const s of STATS) out[s] = observedOwn[s] - Math.round(f[s]);
+  return out;
+}
+
+// panel = floor(tooltip_with_gear * factor). The factor set follows the
+// egg kind (live observation, 2026-11-09): Primary/Junior eggs hatch set-B
+// pets, Senior/Other eggs set-A pets. PANEL_SETS + detectPanelSet() stay
+// for cross-checking an observed tooltip/panel pair.
+export const PANEL_SETS: Record<PanelSet, Stats> = {
+  A: { hp: 1.0, mp: 1.0421, atk: 0.2321, pd: 0.1, md: 0.2 },
+  B: { hp: 0.9792, mp: 1.3979, atk: 0.1533, pd: 0.0759, md: 0.1516 },
+};
+export function panelStats(total: Stats, set: PanelSet): Stats {
+  const f = PANEL_SETS[set], out = zeroStats();
+  for (const s of STATS) out[s] = Math.floor(total[s] * f[s] + 1e-9);
+  return out;
+}
+// empty array = matches neither set (a third set may exist)
+export function detectPanelSet(total: Stats, panel: Stats): PanelSet[] {
+  return (["A", "B"] as PanelSet[]).filter((k) => STATS.every((s) => panelStats(total, k)[s] === panel[s]));
+}
+// the egg kind ("Primary"/"Junior"/"Senior"/"Other") decides the set
+export function panelSetOf(eggKind: string): PanelSet {
+  return eggKind === "Primary" || eggKind === "Junior" ? "B" : "A";
+}
+
+// icons (est., +-2-3): sun > moon > star, more is better within a tier. The
+// pet's own stat sum (NO gear) against a level benchmark. The game has one
+// unexplained gear exception (Hydralion #2), so this row is honest (est.).
+const ICON_KNOTS: [number, number][] = [
+  [0.7216, -8], [1.0055, -3], [1.1955, 3], [1.2974, 8.5], [1.3247, 12],
+  [1.4027, 15], [1.4796, 17.5], [1.5067, 19],
+];
+function iconIndex(rho: number): number {
+  const k = ICON_KNOTS, n = k.length;
+  let i = 0;
+  if (rho >= k[n - 1][0]) i = n - 2; else if (rho > k[0][0]) while (rho > k[i + 1][0]) i++;
+  return k[i][1] + ((rho - k[i][0]) / (k[i + 1][0] - k[i][0])) * (k[i + 1][1] - k[i][1]);
+}
+// index 11+ = sun (index-10), 1-10 = moon, <=0 = star (+10, clamp 1..10)
+export function icons(level: number, own: Stats): PetIcon {
+  if (level < 1) return null;
+  const sum = own.hp + own.mp + own.atk + own.pd + own.md;
+  const rho = sum / (215.8267 + 20.4464 * level ** 1.1826);
+  const i = Math.round(iconIndex(rho));
+  if (i >= 11) return { tier: "sun", count: i - 10 };
+  if (i >= 1) return { tier: "moon", count: i };
+  return { tier: "star", count: Math.min(10, Math.max(1, i + 10)) };
+}
+
+// the five aptitude rows "cur / max": cur = the egg range's midpoint (est.
+// - the server rolls the real value), max = the PETEVOLVE ladder. null when
+// the egg tooltip shipped no range.
+export function petApt(level: number, egg: [number, number] | null): [number, number] | null {
+  return egg ? [(egg[0] + egg[1]) / 2, maxAptitude(level)] : null;
+}
+
+// The pet's fighting power — the client's own routine (client.lto 0x101d8c60,
+// behind SC_GetPetTotalPower; zu-re/evidence/pet_power.c):
+//
+//   aptTerm  = (HP·0.24 + MP·0.10 + ATK·0.30 + (PD+MD)·0.18) × 0.0004
+//              over iIncPropPot[0..4], the aptitudes
+//   valTerm  = (HP·0.26 + MP·0.10 + ATK·0.28 + (PD+MD)·0.18)
+//              over iIncPropVal[0..4], the merge weights
+//   per spell slot with rank > 0:
+//              trunc(trunc(1.736800·r² − 1.001300·r + 0.9) × COMBAT_RATION(54+kind))
+//   power    = trunc(aptTerm × valTerm × 3 + iPetLevel + spellTerm)
+//
+// The constants are floats in the binary (0x103f22a0 = 0.26, 0x103f22a4 = 0.28,
+// 0x103f22ac = 0.24, 0x103f22a8 = 0.0004, 0x103f22b0 = 0.18, 0x103c4cb0 = 0.30,
+// 0x103c85dc = 0.10, 0x103c4ff8 = 3.0, 0x103c185c = 0.9, 0x103f22b4 = 1.001300,
+// 0x103f22b8 = 1.736800).  iIncPropVal never reaches the UI, so callers pass
+// their own estimate for it (the owner-bonus estimate below).
+export type PetPowerInput = {
+  level: number;
+  // the five aptitudes: [HP, MP, ATK, PD, MD]
+  pot: [number, number, number, number, number];
+  // the five current values: [HP, MP, ATK, PD, MD]
+  val: [number, number, number, number, number];
+  // the assigned spells as {kind, rank}; rank 0 = empty slot
+  spells: { kind: number; rank: number }[];
+  spellPower: PetData["spellPower"];
+};
+
+export function petPower({ level, pot, val, spells, spellPower }: PetPowerInput): number {
+  const aptTerm =
+    (0.24 * pot[0] + 0.10 * pot[1] + 0.30 * pot[2] + 0.18 * (pot[3] + pot[4])) * 0.0004;
+  const valTerm = 0.26 * val[0] + 0.10 * val[1] + 0.28 * val[2] + 0.18 * (val[3] + val[4]);
+  let spellTerm = 0;
+  for (const { kind, rank } of spells) {
+    if (rank <= 0) continue;
+    const f = Math.trunc(0.9 + 1.7368 * rank * rank - 1.0013 * rank);
+    spellTerm += Math.trunc(f * (spellPower[kind] ?? 0));
+  }
+  return Math.trunc(aptTerm * valTerm * 3 + level + spellTerm);
 }

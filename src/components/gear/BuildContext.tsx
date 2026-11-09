@@ -12,7 +12,9 @@ export interface PetSpellAsg {
 }
 
 // The pet build: species + pet level + the 4 pet-gear slots (0 eyes, 1 inner
-// bolus, 2 feet accelerator, 3 saddle) + the 8 spell slots
+// bolus, 2 feet accelerator, 3 saddle) + the 8 spell slots. (The panel
+// factor set is derived from the egg kind in pets.ts: panelSetOf, and the
+// user no longer enters Pet Bolus rolls.)
 export interface PetBuild {
   speciesId: number;
   level: number;
