@@ -28,6 +28,7 @@ A web tool for the MMORPG **Zu Online**. Two tabs:
  - [ ] Pet stats and Pet(star/moon/sun) calculations
  - [ ] Character/Pet/Gear Fighting Power calculation
  - [ ] Suffixes anti-/resist fields differs from gear parts and suit/epic. Affected by rank
+ - [ ] Add common spirit weapon, spirit armor, waistband decorator
 
 
 ## Stack
