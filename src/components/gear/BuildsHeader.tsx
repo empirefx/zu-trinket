@@ -245,7 +245,7 @@ export function BuildsHeader({ children }: { children?: ReactNode }) {
           <Alert status="warning">
             <Alert.Indicator />
             <Alert.Content>
-              <Alert.Title>Create or select a build to start</Alert.Title>
+              <Alert.Title>Create a new build to start</Alert.Title>
               <Alert.Description>
                 Use the Builds menu to create, clone or pick one.
               </Alert.Description>
