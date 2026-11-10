@@ -20,15 +20,12 @@ src/
 │   ├── useData.ts          # Loads maps/points/transform JSON
 │   └── useMapState.ts      # All map-page state (slug, visible, cursor, search, etc.)
 ├── pages/
-│   ├── MapPage.tsx         # Map tab: composes SearchPanel, MapListPanel, CategoryPanel, CursorReadout, MapView
 │   ├── MapPage.tsx         # Map tab: composes SidePanel, SavedPanel, CursorReadout, MapView
 │   └── gear/
 │       ├── GearPage.tsx    # Gear tab: BuildProvider + Character/Stats boxes + the Pet|Talent tabs
 │       └── gear.css        # gear-page palette/box/gear styling
 ├── components/
 │   ├── ui/
-│   │   ├── SearchPanel.tsx      # Top-right: category grid + tabs (search/NPC/monster) + the list
-│   │   ├── MapListPanel.tsx     # Left-middle: scrollable list of all 64 maps, active highlighted
 │   │   ├── SidePanel.tsx        # Top-right: category grid + tabs (map/NPC/monster/search) + the list
 │   │   ├── SavedPanel.tsx       # Bottom-left: current-map thumbnail + the saved (pinned) points
 │   │   ├── CategoryPanel.tsx    # HeroUI Tabs: category tab toggles inside the search panel
@@ -57,18 +54,10 @@ src/
 1. `App` → `useData()` fetches `/data/{maps,points,transform}.json` (built by `scripts/build_data.py`)
 2. `App` passes `data` to `MapPage` (Map tab) or `GearPage` (Gear tab)
 3. `MapPage` → `useMapState(data)` derives all interactive state
-4. State passed to floating panels (`SearchPanel`, `MapListPanel`, `CategoryPanel`, `CursorReadout`)
 4. State passed to floating panels (`SidePanel`, `SavedPanel`, `CategoryPanel`, `CursorReadout`)
 5. `MapView` receives `meta`, `transform`, `points`, `visible`, `onCursor`, `focus`
 
-## Coordinate System (Critical)
-- Game world coordinates `(gx, gz)` from `KEYWORDDATA.ZU1` (via `build_data.py`)
-- Each map has `rect = [minX, minZ, sizeX, sizeZ]` from `MAPS.ZU1` @ 0x54
-- **Transform**: `S = max(sizeX, sizeZ) / 1000` — the game normalizes the longer axis to 1000 units
-- **World → game cursor**: `cx = (gx - minX) / S`, `cz = (gz - minZ) / S`
-- **World → image pixel** (for markers): `px = (gx - minX) / sizeX * imgW`, `py = (gz - minZ) / sizeZ * imgH`
-- `Transform` stored in `transform.json` with `kx = sizeX*1000/(imgW*max)`, `kz = sizeZ*1000/(imgH*max)` to convert image px → game cursor for readout
-- **Images displayed at native aspect** (no stretch); markers align fractionally
+
 
 ## Key Files to Know
 | File | Purpose |
