@@ -1,3 +1,4 @@
+![webtool picture](src/assets/background-image.png)
 # Zu Online Map & Build Planner
 
 A web tool for the MMORPG **Zu Online**. Two tabs:
