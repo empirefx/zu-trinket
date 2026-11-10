@@ -14,11 +14,21 @@ React + Leaflet full-screen web map tool for Zu Online / 新蜀山OL. Displays m
 src/
 ├── App.tsx                 # Root: data loading, tabs (Map/Gear), renders pages
 ├── main.tsx                # Entry, imports leaflet.css + index.css
-├── index.css               # @import "@heroui/styles"; dark theme vars
+├── index.css               # @import "@heroui/styles"; dark theme vars + `.cat-icon` mask css
 ├── vite.config.ts          # Vite + @tailwindcss/postcss plugin
 ├── hooks/
 │   ├── useData.ts          # Loads maps/points/transform JSON
-│   └── useMapState.ts      # All map-page state (slug, visible, cursor, search, etc.)
+│   ├── useMapState.ts      # All map-page state (slug, visible, cursor, search, etc.)
+│   ├── useItems.ts         # Lazy item/sets/star loaders (thin wrapper over lib/items.ts)
+│   └── usePets.ts          # Pet list loader
+├── lib/
+│   ├── data.ts             # Types, loadData(), coordinate helpers, CATEGORIES, catColor
+│   ├── items.ts            # Item[]/StarCurves/GearSet loaders + enhance math
+│   ├── icons.ts            # iconClass(item.icon) → sprite-sheet css classes
+│   ├── builds.ts           # Named builds in localStorage (max 10), no React
+│   ├── pets.ts             # Pet stat model (tooltip/panel/power) + sprite icon names
+│   ├── skills.ts           # Class skills: ranks, points cost, effect values
+│   └── talents.ts          # Talent tree data + talentPoints(level) + TREE_NAMES
 ├── pages/
 │   ├── MapPage.tsx         # Map tab: composes SidePanel, SavedPanel, CursorReadout, MapView
 │   └── gear/
@@ -32,22 +42,39 @@ src/
 │   │   ├── CursorReadout.tsx    # Bottom-left: shows "x N y N"
 │   │   └── TopTabs.tsx          # Top bar: Logo (disabled), Map, Gear
 │   ├── map/
-│   │   └── MapView.tsx          # Leaflet map: image overlay + circle markers, CRS.Simple
+│   │   └── MapView.tsx          # Leaflet map: image overlay + divIcon markers, CRS.Simple
 │   └── gear/
-│       ├── BuildContext.tsx      # Build state: classId/level/title/hasPet + togglePet
-│       ├── usePlayerStats.ts     # Player stat rows (applies class curve + title mods)
-│       ├── usePetStats.ts        # Pet stat rows ("—" when no pet)
-│       ├── classData.ts          # GENERATED: per-class, per-level curves (do not edit)
-│       ├── titles.ts             # GENERATED: TITLES[] from TITLE.tsv
+│       ├── BuildContext.tsx      # Build state: classId/level/title/hasPet + gear + pet
+│       ├── BuildsHeader.tsx      # Save/load named builds (localStorage via lib/builds.ts)
 │       ├── CharacterGear.tsx     # Level/Title inputs + 6 L slots / 3D view / 5 R slots + Pet
 │       ├── PlayerStats.tsx       # 13 player stat rows
-│       ├── PetGear.tsx           # Pet level + 2/2 pet slots + S1-S8 spells
-│       ├── PetStats.tsx          # 15 pet stat rows
-│       └── Box.tsx / GearSlot.tsx / GearColumn.tsx / GearViewer.tsx / StatRow.tsx
-├── lib/
-│   └── data.ts            # Types (MapMeta, Point, Transform, Data, Category), loadData(), toPixel/fromPixel, CATEGORIES, catColor
+│       ├── GearPicker.tsx        # Item picker modal (class/slot/grade grouped)
+│       ├── GearDrawer.tsx        # Right drawer: rank, enhance, elements, attributes, set
+│       ├── GearTooltip.tsx / tipText.tsx  # The hover tooltip, the game's wording
+│       ├── ClassSkills.tsx       # The class skill list ("the I key view")
+│       ├── gearSlots.ts          # Slot maps, uniqueItems(), elementNumber math, pretty()
+│       ├── GearSlot.tsx / GearColumn.tsx / GearViewer.tsx / StatRow.tsx
+│       ├── talent/
+│       │   ├── TalentTrees.tsx   # 3 trees × PointNeed bands, icons + CSS tooltips
+│       │   └── talentLogic.ts    # nodeStates(): the game's open/prereq/point rules
+│       ├── pet/
+│       │   ├── PetGear.tsx       # Pet level + 2/2 pet slots + S1-S8 spells
+│       │   ├── PetGearPicker.tsx # Pet gear picker
+│       │   ├── PetPicker.tsx     # Species picker, EGG_GROUPS (hand-kept)
+│       │   ├── PetStats.tsx      # 15 pet stat rows
+│       │   └── usePetStats.ts    # Pet stat rows ("—" when no pet)
+│       └── generated/            # GENERATED — do not edit by hand
+│           ├── classData.ts      # per-class, per-level stat curves (RACE.ZU1)
+│           ├── titles.ts         # TITLES[] from TITLE.tsv
+│           ├── refineData.ts     # per-slot potential attributes (REFINE.ZU1)
+│           ├── attrData.ts       # attribute tooltip text (ITEMATT.ZU1)
+│           ├── elementWheel.ts   # five-element wheel + per-set multipliers
+│           ├── gearSprites.ts    # icon name → gear sprite css classes
+│           └── petSprites.ts     # pet icon name → pet sprite css classes
 └── assets/
-    └── logo.bmp           # 64×64 logo for top tab bar
+    ├── logo.bmp           # 64×64 logo for top tab bar
+    ├── icons/*.bmp        # raw item icons (from ITEMS +588 icon paths)
+    └── sprites/           # packed PNG sheets (5 class + pet) + their css
 ```
 
 ## Data Flow
@@ -67,10 +94,6 @@ src/
 | `src/components/map/MapView.tsx` | Leaflet integration; **only place touching Leaflet API** |
 | `src/pages/MapPage.tsx` | Layout composition; no logic, just wiring |
 
-## The search panel (the in-game "Search" dialog)
-`SearchPanel.tsx` has three tabs, like the game's dialog
-(`zu-re/docs/search-ui.md`):
-- **Search** — the global name search over every point (all maps)
 ## The side panel (the in-game "Search" dialog + the map list)
 `SidePanel.tsx` (renamed from `SearchPanel` — it also hosts the map list) has
 four tabs (Map first, the default):

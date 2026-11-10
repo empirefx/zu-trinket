@@ -1,32 +1,46 @@
-# React + TypeScript + Vite
+# Zu Online Map & Build Planner
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A web tool for the MMORPG **Zu Online**. Two tabs:
 
-Currently, two official plugins are available:
+- **Map** — a full-screen interactive overworld map (React + Leaflet) showing
+  mob spawns, objects and NPCs for every map, with a map switcher, per-category
+  toggles, a name search that jumps to markers, pinnable (saved) points and a
+  cursor readout in the game's own map units — so readings can be compared
+  1:1 with the in-game map.
+- **Gear** — a character build planner: 5 selectable classes, level and title
+  inputs, per-slot equipment with real item stats from the game's item table
+  (upgrade ranks, enhance stars, five elements, potential attributes, set
+  bonuses), class stat curves, pets (stats, gear, spells), the class talent
+  trees and the class skill list, plus named builds saved in localStorage.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## To-do, missing, server side, etc.
 
-## React Compiler
+- [ ] Refines page
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**Map**
+ - [ ] Brigand and Treasure chests categories
 
-## Expanding the Oxlint configuration
+ **Gear**
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+ - [ ] All classes missing one suit lvl 9 icon
+ - [ ] SW suit lvl 9 and epic lvl 7 icon no match
+ - [ ] Classes level stats
+ - [ ] Pet stats and Pet(star/moon/sun) calculations
+ - [ ] Character/Pet/Gear Fighting Power calculation
+ - [ ] Suffixes anti-/resist fields differs from gear parts and suit/epic. Affected by rank
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+
+## Stack
+
+React 19 · TypeScript · Vite 8 · Leaflet 1.9 (CRS.Simple) · HeroUI 3 + Tailwind CSS 4
+
+## Commands
+
+```bash
+npm run dev          # dev server on http://localhost:5173 (IPv6 ::1)
+npm run build        # typecheck + production build
+npm run lint         # oxlint
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+For the full architecture, coordinate system, data formats and conventions,
+read [`AGENTS.md`](AGENTS.md) — it is the detailed project reference.
