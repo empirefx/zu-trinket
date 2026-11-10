@@ -32,6 +32,19 @@
   gap: 8px;
 }
 
+/* mobile: the head fields wrap to their own rows instead of space-between
+   stretching a lone last-wrapped field over the whole width */
+@media (max-width: 640px) {
+  .gear-page .head {
+    justify-content: flex-start;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .gear-page .head .field {
+    flex: 1 1 45%;
+  }
+}
+
 /* labels a bit bigger than the old 12px, muted, on one line with the control */
 .gear-page .head .field > span {
   font-size: 14px;
