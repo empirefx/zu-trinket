@@ -1,6 +1,6 @@
-import { StatRow } from "./StatRow";
+import { StatRow } from "../StatRow";
 import { usePetStats } from "./usePetStats";
-import { useBuild } from "./BuildContext";
+import { useBuild } from "../BuildContext";
 
 export function PetStats() {
   const stats = usePetStats();

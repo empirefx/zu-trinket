@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, Chip } from "@heroui/react";
-import { useBuild } from "./BuildContext";
+import { useBuild } from "../BuildContext";
 import {
   loadTalents,
   talentPoints,
@@ -8,10 +8,10 @@ import {
   type ClassTalents,
   type TalentNode,
   type TalentTree,
-} from "../../lib/talents";
+} from "../../../lib/talents";
 import { nodeStates } from "./talentLogic";
-import { TipText } from "./tipText";
-import { iconClass } from "../../lib/icons";
+import { TipText } from "../tipText";
+import { iconClass } from "../../../lib/icons";
 
 const COLS = 4;
 const ROWS = 8;

@@ -1,12 +1,12 @@
 import { useState, type ReactNode } from "react";
 import { Input } from "@heroui/react";
-import { GearColumn } from "./GearColumn";
-import { GearViewer } from "./GearViewer";
-import { GearSlot } from "./GearSlot";
+import { GearColumn } from "../GearColumn";
+import { GearViewer } from "../GearViewer";
+import { GearSlot } from "../GearSlot";
 import { PetGearPicker } from "./PetGearPicker";
-import { useBuild, type PetSpellAsg } from "./BuildContext";
-import { usePets } from "../../hooks/usePets";
-import { petIconClass } from "../../lib/icons";
+import { useBuild, type PetSpellAsg } from "../BuildContext";
+import { usePets } from "../../../hooks/usePets";
+import { petIconClass } from "../../../lib/icons";
 
 // pet gear slots 0..3 = eyes, inner bolus, feet accelerator, saddle
 const PET_LEFT_SLOTS = ["PetGearEyes", "PetGearInnerBolus"];

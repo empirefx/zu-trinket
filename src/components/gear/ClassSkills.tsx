@@ -9,7 +9,7 @@ import {
   type SkillRank,
 } from "../../lib/skills";
 import { loadTalents, spellAffects, taughtBy, type ClassTalents, type SpellAffect } from "../../lib/talents";
-import { SPRITE_CLASS } from "./gearSprites";
+import { SPRITE_CLASS } from "./generated/gearSprites";
 import { iconClass } from "../../lib/icons";
 import { TipText } from "./tipText";
 

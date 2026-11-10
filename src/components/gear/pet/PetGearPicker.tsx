@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import { usePets } from "../../hooks/usePets";
-import { petIconClass } from "../../lib/icons";
-import type { PetGearItem } from "../../lib/pets";
+import { usePets } from "../../../hooks/usePets";
+import { petIconClass } from "../../../lib/icons";
+import type { PetGearItem } from "../../../lib/pets";
 
 // The pet-gear picker for one pet slot (0 eyes, 1 inner bolus, 2 feet
 // accelerator, 3 saddle): the slot's pieces sorted by level requirement,

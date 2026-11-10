@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import { usePets } from "../../hooks/usePets";
-import { sortSpecies } from "../../lib/pets";
-import { petIconClass } from "../../lib/icons";
+import { usePets } from "../../../hooks/usePets";
+import { sortSpecies } from "../../../lib/pets";
+import { petIconClass } from "../../../lib/icons";
 
 // The egg windows in the game's own wording (live observation, 2026-11-09).
 // Each egg tooltip lists which pets it can hatch — cumulative, so pets repeat

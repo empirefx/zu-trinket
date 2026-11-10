@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { useBuild } from "./BuildContext";
 import { gearTotals } from "./gearSlots";
 import { useStar } from "../../hooks/useItems";
-import { TITLES } from "./titles";
-import { CLASS_CURVES } from "./classData";
+import { TITLES } from "./generated/titles";
+import { CLASS_CURVES } from "./generated/classData";
 
 const PARRY = 3;
 const CRIT = 3;

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import { useBuild } from "./BuildContext";
-import { usePets } from "../../hooks/usePets";
-import { petPower, petApt, petTooltip, panelStats, panelSetOf, type Stat, type Aptitudes } from "../../lib/pets";
+import { useBuild } from "../BuildContext";
+import { usePets } from "../../../hooks/usePets";
+import { petPower, petApt, petTooltip, panelStats, panelSetOf, type Stat, type Aptitudes } from "../../../lib/pets";
 
 // The Pet Stats rows (the fitted model of docs/pet-stat-calculations.md,
 // all of it (est.)): the owner bonus rows are panelStats (floor(tooltip *

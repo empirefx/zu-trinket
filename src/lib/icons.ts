@@ -1,7 +1,7 @@
 import "../assets/sprites/gear-sprites.css";
 import "../assets/sprites/pet-sprites.css";
-import { SPRITE_CLASS } from "../components/gear/gearSprites";
-import { SPRITE_CLASS as PET_SPRITES } from "../components/gear/petSprites";
+import { SPRITE_CLASS } from "../components/gear/generated/gearSprites";
+import { SPRITE_CLASS as PET_SPRITES } from "../components/gear/generated/petSprites";
 
 // The gear icons are packed into one sheet per class by
 // scripts/gen_gear_sprites.py; the css classes below draw the item's icon

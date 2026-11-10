@@ -1,4 +1,4 @@
-import type { TalentNode, TalentTree } from "../../lib/talents";
+import type { TalentNode, TalentTree } from "../../../lib/talents";
 
 // The learned ranks: a node's id -> the rank that is learned (0 = not learned)
 export type TalentRanks = Record<number, number>;

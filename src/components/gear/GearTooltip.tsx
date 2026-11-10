@@ -1,8 +1,8 @@
 import { useStar, useSets } from "../../hooks/useItems";
 import { useBuild } from "./BuildContext";
 import { elementNumbers, CLASS_NAMES, TIER_LABEL, statLineText, damageLineText } from "./gearSlots";
-import { ATTR_INFO } from "./attrData";
-import { ELEMENT_WHEEL, ELEMENT_BIT } from "./elementWheel";
+import { ATTR_INFO } from "./generated/attrData";
+import { ELEMENT_WHEEL, ELEMENT_BIT } from "./generated/elementWheel";
 import { enhancePct, type EquipEntry } from "../../lib/items";
 import { glyph, glyphColor, ATTR_KEY } from "./GearDrawer";
 

@@ -43,8 +43,8 @@ export type Item = {
 
 // A potential attribute, joined from REFINE.ZU1 (the guide wording, e.g.
 // "Rip") and ITEMATT.ZU1 (the in-game wording + tooltip, e.g. "Accuracy").
-// The generated table lives in src/components/gear/attrData.ts.
-export type { AttrInfo } from "../components/gear/attrData";
+// The generated table lives in src/components/gear/generated/attrData.ts.
+export type { AttrInfo } from "../components/gear/generated/attrData";
 
 // A set definition (suits: 2 per level; epics: 1 per level). bonuses maps piece
 // count ("2".."8") -> the in-game bonus text for wearing that many pieces.

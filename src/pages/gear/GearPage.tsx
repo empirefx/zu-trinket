@@ -4,9 +4,9 @@ import "./gear.css";
 import "./slots-sprite.css";
 import { CharacterGear } from "../../components/gear/CharacterGear";
 import { PlayerStats } from "../../components/gear/PlayerStats";
-import { PetGear } from "../../components/gear/PetGear";
-import { PetStats } from "../../components/gear/PetStats";
-import { TalentTrees } from "../../components/gear/TalentTrees";
+import { PetGear } from "../../components/gear/pet/PetGear";
+import { PetStats } from "../../components/gear/pet/PetStats";
+import { TalentTrees } from "../../components/gear/talent/TalentTrees";
 import { BuildProvider, useBuild } from "../../components/gear/BuildContext";
 import { BuildsHeader } from "../../components/gear/BuildsHeader";
 

@@ -6,14 +6,14 @@ import { GearSlot } from "./GearSlot";
 import { GearTooltip } from "./GearTooltip";
 import { GearPicker } from "./GearPicker";
 import { GearDrawer } from "./GearDrawer";
-import { PetPicker } from "./PetPicker";
+import { PetPicker } from "./pet/PetPicker";
 import { glyph, glyphColor } from "./GearDrawer";
 import { CLASS_NAMES, SLOT_ITEMS } from "./gearSlots";
 import { iconClass, petIconClass } from "../../lib/icons";
 import { usePets } from "../../hooks/usePets";
 import { useBuild, type ClassId, type PetBuild } from "./BuildContext";
 import { petApt, petTooltip, petPower, icons as petIcons, type Stats, type Aptitudes } from "../../lib/pets";
-import { TITLES } from "./titles";
+import { TITLES } from "./generated/titles";
 import type { EquipEntry, Item } from "../../lib/items";
 
 const LEFT_SLOTS = [

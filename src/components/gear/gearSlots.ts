@@ -1,6 +1,6 @@
 import type { DarksteelTier, EquipEntry, Item, StarCurves } from "../../lib/items";
 import { enhancePct } from "../../lib/items";
-import { ELEMENT_BIT, ELEMENT_SETS, ELEMENT_WHEEL } from "./elementWheel";
+import { ELEMENT_BIT, ELEMENT_SETS, ELEMENT_WHEEL } from "./generated/elementWheel";
 
 const normName = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 

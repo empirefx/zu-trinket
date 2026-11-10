@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { pretty, SLOT_REFINE, REFINE_SET, elementNumbers, darksteelBonus, nextDarksteelTier, TIER_LABEL, statLine, damageLine } from "./gearSlots";
-import { REFINE_ATTRS } from "./refineData";
-import { ATTR_INFO } from "./attrData";
-import { ELEMENT_BIT, ELEMENT_WHEEL } from "./elementWheel";
+import { REFINE_ATTRS } from "./generated/refineData";
+import { ATTR_INFO } from "./generated/attrData";
+import { ELEMENT_BIT, ELEMENT_WHEEL } from "./generated/elementWheel";
 import { useBuild } from "./BuildContext";
 import { useStar, useSets } from "../../hooks/useItems";
 import { enhancePct } from "../../lib/items";

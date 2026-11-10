@@ -21,6 +21,7 @@ src/
 │   └── useMapState.ts      # All map-page state (slug, visible, cursor, search, etc.)
 ├── pages/
 │   ├── MapPage.tsx         # Map tab: composes SearchPanel, MapListPanel, CategoryPanel, CursorReadout, MapView
+│   ├── MapPage.tsx         # Map tab: composes SidePanel, SavedPanel, CursorReadout, MapView
 │   └── gear/
 │       ├── GearPage.tsx    # Gear tab: BuildProvider + Character/Stats boxes + the Pet|Talent tabs
 │       └── gear.css        # gear-page palette/box/gear styling
@@ -28,6 +29,8 @@ src/
 │   ├── ui/
 │   │   ├── SearchPanel.tsx      # Top-right: category grid + tabs (search/NPC/monster) + the list
 │   │   ├── MapListPanel.tsx     # Left-middle: scrollable list of all 64 maps, active highlighted
+│   │   ├── SidePanel.tsx        # Top-right: category grid + tabs (map/NPC/monster/search) + the list
+│   │   ├── SavedPanel.tsx       # Bottom-left: current-map thumbnail + the saved (pinned) points
 │   │   ├── CategoryPanel.tsx    # HeroUI Tabs: category tab toggles inside the search panel
 │   │   ├── CursorReadout.tsx    # Bottom-left: shows "x N y N"
 │   │   └── TopTabs.tsx          # Top bar: Logo (disabled), Map, Gear
@@ -55,6 +58,7 @@ src/
 2. `App` passes `data` to `MapPage` (Map tab) or `GearPage` (Gear tab)
 3. `MapPage` → `useMapState(data)` derives all interactive state
 4. State passed to floating panels (`SearchPanel`, `MapListPanel`, `CategoryPanel`, `CursorReadout`)
+4. State passed to floating panels (`SidePanel`, `SavedPanel`, `CategoryPanel`, `CursorReadout`)
 5. `MapView` receives `meta`, `transform`, `points`, `visible`, `onCursor`, `focus`
 
 ## Coordinate System (Critical)
@@ -78,8 +82,13 @@ src/
 `SearchPanel.tsx` has three tabs, like the game's dialog
 (`zu-re/docs/search-ui.md`):
 - **Search** — the global name search over every point (all maps)
+## The side panel (the in-game "Search" dialog + the map list)
+`SidePanel.tsx` (renamed from `SearchPanel` — it also hosts the map list) has
+four tabs (Map first, the default):
+- **Map** — the map switcher (all maps, active highlighted, click to jump)
 - **NPC** — the current map's NPCs: name · **function** · (x,y) in map units
 - **Monster** — the current map's monsters: name · **level** · (x,y)
+- **Search** — the global name search over every point (all maps)
 
 A row only shows the middle column when there is something to show (no
 function / no known level → the column is dropped, not filled with a dash).
@@ -102,6 +111,30 @@ The *function* and the *level* come from `OBJS.ZU1` (title @+30, level
 as `func` / `level` per point.  The coordinates are the game's **map units**
 (`(world - rect.min) * 1000 / max(sizeX,sizeZ)`) — the same numbers the
 in-game cursor readout shows, so the panel can be compared with the game.
+
+## The saved panel (SavedPanel.tsx, bottom-left)
+Clicking a **map marker** pins the point; clicking it again unpins (the pinned
+marker gets a gold ring, `.marker-saved` in `src/index.css`). The panel stacks
+a **static thumbnail** of the current map (aspect-ratio box + `<img>`, pinned
+points as `.cat-icon` dots positioned by the transform) over the **saved
+list**: category icon · name · map name, click jumps via `handleResultClick`
+(switches maps). State is `saved` (insertion-ordered ids) + `savedSet` in
+`useMapState` — session-only, clears on refresh. Nothing re-renders except on
+map switch or pin/unpin.
+
+The thumb also shows the **main map's viewport rectangle** (gold border):
+`MapView` reports its view on `moveend` (`getBounds()` clamped to the pixel
+box, as fractions) through `onViewport` into `useMapState`'s `viewport`
+state, and the panel draws it; hidden on maps without a transform.
+
+**Minimap orientation (measured, 2026-11-02):** Leaflet's lat axis runs up;
+the art file's **top edge holds the high-gz content** (image top edge reads
+cursor y ≈ 811, bottom ≈ −22 — verified against the game-verified readout
+frame), so the thumb maps a pixel as `top = 1 − py/t.h` and the rectangle as
+`top = 1 − (y + h)`. The thumb's **aspect is the transform box** `t.w/t.h` —
+the overlay stretches the image to that box, and it can differ a lot from
+`meta.width/height` (Miracle Town 1024×817 vs 1885×819), which would skew
+both the image and the dot positions.
 
 ## Character Build Data (Gear Page)
 
