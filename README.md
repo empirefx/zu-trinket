@@ -23,7 +23,8 @@ A web tool for the MMORPG **Zu Online**. Two tabs:
  **Gear**
 
  - [ ] All classes missing one weapon suit lvl 9 icon
- - [ ] SW suit lvl 9 and epic lvl 7 icon no match
+ - [x] ~~SW suit lvl 9 and epic lvl 7 icon no match~~(GEARFIX icons removed)
+ - [ ] SW epic 7 weapon icon(real one?)
  - [ ] Classes level stats
  - [ ] Pet stats and Pet(star/moon/sun) calculations
  - [ ] Character/Pet/Gear Fighting Power calculation
