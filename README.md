@@ -29,6 +29,8 @@ A web tool for the MMORPG **Zu Online**. Two tabs:
  - [ ] Classes level stats
  - [ ] Pet stats and Pet(star/moon/sun) calculations
  - [ ] Character/Pet/Gear Fighting Power calculation
+ - [ ] 18 suit 2 armour pieces missing ranks
+ - [ ] 45 items suit 1 with no enchant
  - [ ] Add suffixes anti-/resist fields differs from gear parts and suit/epic. Affected by rank
  - [ ] Add common spirit weapon, spirit armor, waistband decorator
  - [ ] Add HP Chain Bonus(legendary)
