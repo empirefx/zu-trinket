@@ -7,8 +7,9 @@ import { TITLES } from "./generated/titles";
 import { CLASS_CURVES } from "./generated/classData";
 import { ELEMENT_BIT, ELEMENT_SETS } from "./generated/elementWheel";
 import { ATTR_INFO } from "./generated/attrData";
-import { loadTalents, passiveStats, type ClassTalents } from "../../lib/talents";
+import { loadTalents, passiveStats, type PassiveStats, type ClassTalents } from "../../lib/talents";
 import { petOwnerBonus } from "../../lib/pets";
+import { iconClass, petIconClass } from "../../lib/icons";
 
 const PARRY = 3;
 const CRIT = 3;
@@ -27,6 +28,11 @@ const FALLBACK_ROW: Record<number, string> = {
 function bonus(n: number) {
   return n > 0 ? ` (+${n})` : "";
 }
+
+// one tooltip line of a stat row: the source's icon (when it has one),
+// name, and what it gives — kind drives the Title/Talent/Gear/Pet grouping
+export type StatTipKind = "title" | "talent" | "gear" | "sets" | "pet";
+export type StatTip = { kind: StatTipKind; name: string; text: string; icon?: string };
 
 export function usePlayerStats() {
   const { classId, level, title, gear, talentRanks, pet, hasPet } = useBuild();
@@ -49,22 +55,68 @@ export function usePlayerStats() {
     const mod = TITLES.find((t) => t.name === title);
     const lv = Math.min(Math.max(0, level), curve.hp.length - 1);
 
+    // per-row contributor tooltip: every source that moves a row lists
+    // itself here (icon when the source has one — name — its own wording),
+    // grouped by kind — the tooltip renders Title/Talent/Gear/Sets/Pet
+    // sections
+    const tips: Record<string, StatTip[]> = {};
+    const tip = (row: string, kind: StatTip["kind"], name: string, text: string, icon?: string) =>
+      (tips[row] ??= []).push({ kind, name, text, icon });
+    // the title: the game's own effect text is what it gives
+    if (mod) {
+      if (mod.hp) tip("Health", "title", mod.name, mod.effect);
+      if (mod.attack) tip("Damage", "title", mod.name, mod.effect);
+      if (mod.defense) tip("PD", "title", mod.name, mod.effect);
+      if (mod.dodge) tip("Dodge", "title", mod.name, mod.effect);
+      if (mod.move) tip("Movement", "title", mod.name, mod.effect);
+      if (mod.drop) tip("Gear Loss Rate", "title", mod.name, mod.effect);
+    }
+
+    // the baseless bonus rows' labels derive once — the rows and the tips
+    // share them (kind 3 → "resistance rate", 1 → "restoration speed of
+    // HP", 2 → "restoration speed of MP", 0 → "Rebound damages")
+    const kLabel: Record<number, string> = {};
+    for (const k of [3, 1, 2, 0])
+      kLabel[k] =
+        (pets?.spells[k]?.desc ?? FALLBACK_ROW[k])
+          .split("$")[0].replace(/^Increases (the )?/, "").trim();
+
     // the passive stat lines of the learned talent ranks (talents.ts
     // passiveStats): the per-spell talents belong to the Skills tab
-    const pas = passiveStats(talents?.[classId], talentRanks);
+    const pas = passiveStats(talents?.[classId], talentRanks, iconClass);
+    const ROW_OF_STAT: Record<keyof PassiveStats, string> = {
+      hpPct: "Health", atkPct: "Damage", defPct: "PD", dodge: "Dodge",
+      garrote: "Garrote", crit: "Critical", parry: "Parry",
+      critDmg: "Critical damage", garroteDmg: "Garrote damage", block: "Block",
+    };
+    for (const en of pas.entries)
+      for (const k of Object.keys(en.stats) as (keyof PassiveStats)[])
+        tip(ROW_OF_STAT[k], "talent", en.name, en.text, en.icon);
+
     // the pet's owner bonus: the five panel numbers of the pet tooltip with
     // gear (fIncPropNum, server-sent — the fitted panelStats model here) +
     // the Speed+ % + the Garrote/Critical pet-spell rates (pets.ts)
+    const petSpec = hasPet && pets && pet ? pets.species.find((s) => s.id === pet.speciesId) : undefined;
     const b =
       hasPet && pets && pet
-        ? petOwnerBonus(
-            pet.level,
-            pet.gear,
-            pet.spells,
-            pets.species.find((s) => s.id === pet.speciesId),
-            pets.spells,
-          )
+        ? petOwnerBonus(pet.level, pet.gear, pet.spells, petSpec, pets.spells)
         : null;
+    const petName = petSpec?.name ?? "Pet";
+    const petIcon = petIconClass(petSpec?.icon);
+    if (b) {
+      const fmt = (v: number) => `+${+v.toFixed(2)}%`;
+      if (b.hp) tip("Health", "pet", petName, `+${b.hp} Health`, petIcon);
+      if (b.mp) tip("Mana", "pet", petName, `+${b.mp} Mana`, petIcon);
+      if (b.atk) tip("Damage", "pet", petName, `+${b.atk} Attack`, petIcon);
+      if (b.pd) tip("PD", "pet", petName, `+${b.pd} PD`, petIcon);
+      if (b.md) tip("MD", "pet", petName, `+${b.md} MD`, petIcon);
+      if (b.speedPct) tip("Movement", "pet", petName, `+${b.speedPct}% Speed`, petIcon);
+      // the pet spells: 5/6 into the rate rows, 1/2/3/0 into baseless rows
+      if (b.spells[5]) tip("Garrote", "pet", pets?.spells[5]?.name ?? "Pet spell", fmt(b.spells[5]), petIconClass(pets?.spells[5]?.icon));
+      if (b.spells[6]) tip("Critical", "pet", pets?.spells[6]?.name ?? "Pet spell", fmt(b.spells[6]), petIconClass(pets?.spells[6]?.icon));
+      for (const k of [3, 1, 2, 0])
+        if (b.spells[k]) tip(kLabel[k], "pet", pets?.spells[k]?.name ?? "Pet spell", fmt(b.spells[k]), petIconClass(pets?.spells[k]?.icon));
+    }
 
     // titles and talent % compose multiplicatively; the pet's flats add on
     // top (the game's own order of application is server-side)
@@ -101,25 +153,41 @@ export function usePlayerStats() {
     for (const e of Object.values(gear)) {
       let mask = 0;
       for (const n of e.elements ?? []) mask |= ELEMENT_BIT[n] ?? 0;
+      const ico = iconClass(e.item.icon);
+      const elemRow: Record<string, string> = { atk: "Damage", hp: "Health", pd: "PD", md: "MD" };
       e.item.elems?.[Math.min(e.rank, e.item.elems.length - 1)]?.forEach((base, idx) => {
         if (base == null || !(mask & (1 << idx))) return;
         const st = ELEM_STAT[idx];
         if (!st) return;
-        elemAdd[st] += Math.floor(base * (ELEMENT_SETS[String(mask)]?.[ELEM_NAMES[idx]] ?? 1));
+        const el = Math.floor(base * (ELEMENT_SETS[String(mask)]?.[ELEM_NAMES[idx]] ?? 1));
+        elemAdd[st] += el;
+        tip(elemRow[st], "gear", e.item.name, `${ELEM_NAMES[idx]} +${el}`, ico);
       });
       for (const a of e.attrs ?? []) {
         const v = ATTR_INFO[a]?.values ?? [];
-        if (a === "Critical") attr.crit += pct100(v[0]);
-        else if (a === "Garrote") attr.garrote += pct100(v[0]);
-        else if (a === "Dodge") attr.dodge += pct100(v[0]);
-        else if (a === "Resistance") attr.parry += pct100(v[0]);
-        else if (a === "Power") { attr.garrote += pct100(v[0]); attr.crit += pct100(v[1]); }
-        else if (a === "Luck") { attr.parry += pct100(v[0]); attr.garrote += pct100(v[1]); attr.crit += pct100(v[2]); attr.drop += pct100(v[3]); }
-        else if (a === "Regeneration") attr.regen += pct100(v[0]);
-        else if (a === "Rejuvenation") attr.rej += pct100(v[0]);
-        else if (a === "Resilience") attr.rebound += pct100(v[0]);
-        else if (a === "Slice") attr.atkSpd += pct100(v[0]);
-        else if (a === "swiftness") attr.move += v[0] ?? 0; // flat, not a %
+        if (a === "Critical") { const x = pct100(v[0]); attr.crit += x; tip("Critical", "gear", e.item.name, `Critical +${+x.toFixed(2)}%`, ico); }
+        else if (a === "Garrote") { const x = pct100(v[0]); attr.garrote += x; tip("Garrote", "gear", e.item.name, `Garrote +${+x.toFixed(2)}%`, ico); }
+        else if (a === "Dodge") { const x = pct100(v[0]); attr.dodge += x; tip("Dodge", "gear", e.item.name, `Dodge +${+x.toFixed(2)}%`, ico); }
+        else if (a === "Resistance") { const x = pct100(v[0]); attr.parry += x; tip("Parry", "gear", e.item.name, `Resistance +${+x.toFixed(2)}%`, ico); }
+        else if (a === "Power") {
+          for (const [row, key] of [["Garrote", "garrote"], ["Critical", "crit"]] as const) {
+            const x = pct100(key === "garrote" ? v[0] : v[1]);
+            attr[key] += x; tip(row, "gear", e.item.name, `Power +${+x.toFixed(2)}%`, ico);
+          }
+        }
+        else if (a === "Luck") {
+          const p = pct100(v[0]), c = pct100(v[1]), g2 = pct100(v[2]), d = pct100(v[3]);
+          attr.parry += p; attr.garrote += c; attr.crit += g2; attr.drop += d;
+          tip("Parry", "gear", e.item.name, `Luck +${+p.toFixed(2)}% parry`, ico);
+          tip("Garrote", "gear", e.item.name, `Luck +${+c.toFixed(2)}% garrote`, ico);
+          tip("Critical", "gear", e.item.name, `Luck +${+g2.toFixed(2)}% critical`, ico);
+          tip("Gear Loss Rate", "gear", e.item.name, `Luck −${+d.toFixed(2)}% gear loss`, ico);
+        }
+        else if (a === "Regeneration") { const x = pct100(v[0]); attr.regen += x; tip(kLabel[1], "gear", e.item.name, `Regeneration +${+x.toFixed(2)}%`, ico); }
+        else if (a === "Rejuvenation") { const x = pct100(v[0]); attr.rej += x; tip(kLabel[2], "gear", e.item.name, `Rejuvenation +${+x.toFixed(2)}%`, ico); }
+        else if (a === "Resilience") { const x = pct100(v[0]); attr.rebound += x; tip(kLabel[0], "gear", e.item.name, `Resilience +${+x.toFixed(2)}%`, ico); }
+        else if (a === "Slice") { const x = pct100(v[0]); attr.atkSpd += x; tip("Atk Speed", "gear", e.item.name, `Attack Speed +${+x.toFixed(2)}%`, ico); }
+        else if (a === "swiftness") { attr.move += v[0] ?? 0; tip("Movement", "gear", e.item.name, `Swiftness +${v[0] ?? 0} Movement`, ico); }
       }
     }
     const counts: Record<number, number> = {};
@@ -131,11 +199,11 @@ export function usePlayerStats() {
         const t = set.bonuses[String(k)];
         if (!t) continue;
         const m = /Increases (\d+) Attack Power/.exec(t);
-        if (m) setAdd.atk += +m[1];
+        if (m) { setAdd.atk += +m[1]; tip("Damage", "sets", set.name, t); }
         const h = /Increases (\d+) Maximum Health/.exec(t);
-        if (h) setAdd.hp += +h[1];
+        if (h) { setAdd.hp += +h[1]; tip("Health", "sets", set.name, t); }
         const d = /Increases (\d+) Physical Defense and (\d+) Magical Defense/.exec(t);
-        if (d) { setAdd.pd += +d[1]; setAdd.md += +d[2]; }
+        if (d) { setAdd.pd += +d[1]; setAdd.md += +d[2]; tip("PD", "sets", set.name, t); tip("MD", "sets", set.name, t); }
       }
     }
 
@@ -199,7 +267,7 @@ export function usePlayerStats() {
         // Critical fold into the rows above)
         ...[3, 1, 2, 0]
           .map((k) => ({
-            k,
+            label: kLabel[k],
             // kind 1/2 also take the Regeneration / Rejuvenation attribute
             // toggles, kind 0 the Resilience reflect toggle
             v:
@@ -207,19 +275,12 @@ export function usePlayerStats() {
               (k === 1 ? attr.regen : k === 2 ? attr.rej : k === 0 ? attr.rebound : 0),
           }))
           .filter((x) => x.v > 0)
-          .map((x) => ({
-            // e.g. "Increases the restoration speed of HP $$_a" →
-            // "restoration speed of HP" (fallback wording for the first
-            // frame while pets.json loads)
-            label:
-              (pets?.spells[x.k]?.desc ?? FALLBACK_ROW[x.k])
-                .split("$")[0].replace(/^Increases (the )?/, "").trim(),
-            value: pct(x.v),
-          })),
+          .map((x) => ({ label: x.label, value: pct(x.v) })),
         { label: "Atk Speed", value: (curve.atkSpeed * (1 + attr.atkSpd / 100)).toFixed(2) },
         { label: "Movement", value: `${move}${bonus(move - curve.move)}` },
         { label: "Gear Loss Rate", value: `${lossRate.toFixed(2)}%` },
       ],
+      tips,
     };
   }, [classId, level, title, gear, star, sets, talentRanks, talents, pets, pet, hasPet]);
 }

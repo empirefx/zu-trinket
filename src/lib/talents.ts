@@ -200,25 +200,46 @@ const PASSIVE_RES: [keyof PassiveStats, RegExp][] = [
   ["block", /block chance by ([\d.]+)%/i],
 ];
 
+// the learned passive talents, one entry per node (PlayerStats' tooltip):
+// the node's name/icon and its own text carry what it contributes
+export type PassiveEntry = {
+  name: string;
+  icon: string | undefined;
+  // the learned rank's intro, "Passive:" stripped
+  text: string;
+  // which stat keys the text granted (the same keys as the sums)
+  stats: Partial<PassiveStats>;
+};
+
+const stripPassive = (s: string) => s.replace(/^Passive:\s*/i, "");
+
 export function passiveStats(
   trees: ClassTalents | undefined,
   ranks: Record<number, number>,
-): PassiveStats {
+  iconClass?: (icon: string) => string | undefined,
+): PassiveStats & { entries: PassiveEntry[] } {
   const sums: PassiveStats = {
     hpPct: 0, atkPct: 0, defPct: 0, dodge: 0, garrote: 0, crit: 0, parry: 0,
     critDmg: 0, garroteDmg: 0, block: 0,
   };
+  const entries: PassiveEntry[] = [];
   for (const tree of trees ?? []) {
     for (const node of tree.nodes) {
       const rank = ranks[node.id] ?? 0;
       if (rank <= 0) continue;
       const text = (node.intros[Math.min(rank, node.intros.length) - 1] ?? "").trim();
       if (!/^Passive:/i.test(text)) continue;
+      const stats: Partial<PassiveStats> = {};
       for (const [key, re] of PASSIVE_RES) {
         const m = re.exec(text);
-        if (m) sums[key] += Number(m[1]);
+        if (m) {
+          sums[key] += Number(m[1]);
+          stats[key] = (stats[key] ?? 0) + Number(m[1]);
+        }
       }
+      if (Object.keys(stats).length)
+        entries.push({ name: node.name, icon: iconClass?.(node.icon), text: stripPassive(text), stats });
     }
   }
-  return sums;
+  return { ...sums, entries };
 }

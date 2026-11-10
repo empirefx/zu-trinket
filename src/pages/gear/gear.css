@@ -668,6 +668,66 @@
   font-size: 13px;
 }
 
+/* the stat rows' contributor tooltip: one line per source that moves the
+   row (icon — name — what it gives); bigger, auto width, opens to the
+   LEFT of the row, long lines truncate with an ellipsis */
+.gear-page .stat-type-row { color:red; display: flex;  flex-direction: column;  gap: 5px;  margin-bottom: 14px; }
+.gear-page .stat-type-row:last-child { margin-bottom: 0px; }
+.gear-page .stat-row { position: relative; }
+.gear-page .stat-row:hover .hover-tip,
+.gear-page .stat-row:focus-visible .hover-tip {
+  opacity: 1;
+  visibility: visible;
+}
+.gear-page .stat-row .hover-tip {
+  bottom: auto;
+  left: auto;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  max-width: 380px;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.gear-page .stat-tip-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 8px;
+  row-gap: 1px;
+  /* one contributor per block, a small gap between the sections */
+  margin-top: 5px;
+}
+.gear-page .stat-tip-kind {
+  color: #9aa4b2;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 7px;
+}
+.gear-page .stat-tip-kind:first-of-type { margin-top: 0; }
+.gear-page .stat-tip-row .gear-icon {
+  width: 20px; height: 20px; flex: none;
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+.gear-page .stat-tip-src { color: #e8c36a; font-weight: 600; font-size: 14px; }
+.gear-page .stat-tip-text {
+  color: #dfe3ea;
+  /* the description runs the whole tooltip width, under icon + name */
+  grid-column: 1 / -1;
+  grid-row: 2;
+  /* wraps — the one place a long sentence is allowed to take lines */
+  white-space: normal;
+}
+.gear-page .tip-stat-name {
+  color: #7fb8ff;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
 /* --- class skills ("the I key") --- */
 .gear-page .sk-panel {
   /* two flex columns that wrap like the skeleton's grid layout */
