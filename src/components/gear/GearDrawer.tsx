@@ -270,7 +270,6 @@ export function GearDrawer({ item, appSlot, onCancel, onAdd, initial }: GearDraw
                       <span className="mark">{on.has(a) ? "✓" : "□"}</span>
                       <span>
                         <b>{a}</b>
-                        {info && info.name !== a ? <span className="attr-note"> ({info.name})</span> : null}
                         {" — "}
                         <span className="attr-desc">{info?.desc ?? ""}</span>
                       </span>

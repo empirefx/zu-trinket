@@ -67,8 +67,7 @@ export function PetPicker({ onClose, onPick, onClear }: PetPickerProps) {
               <div className="group">{g.label} · {g.rows.length}</div>
               {g.rows.map((s) => {
                 const icon = petIconClass(s.icon);
-                // the egg tooltip promises 2300 for the pets it has no range
-                // for (the real roll is server-side, hence "(est.)")
+                // the egg tooltip promises 2300 for the pets it has no range for
                 const apt = s.apt ?? [2300, 2300];
                 return (
                   <div key={s.id} className="item-row" onClick={() => onPick(s.id)}>

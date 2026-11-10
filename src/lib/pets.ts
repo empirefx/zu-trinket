@@ -69,8 +69,8 @@ export function loadPets(): Promise<PetData> {
 }
 
 // The max aptitude a pet of this level can hold: the PETEVOLVE ladder
-// (2500 at hatch, +500 per stage, 5000 cap).  (est.) - the client table
-// gives the stages; the exact growth between them is not shipped.
+// (2500 at hatch, +500 per stage, 5000 cap).  The client table gives the
+// stages; the exact growth between them is not shipped.
 export function maxAptitude(level: number): number {
   return Math.min(5000, 2500 + 500 * Math.floor(level / 40));
 }
@@ -91,8 +91,7 @@ export function maxGearLevel(gear: PetGearItem[]): number {
 
 // The fitted stat model of docs/pet-stat-calculations.md (8 live pets,
 // levels 0-80). This is a FIT, not the client's own formula - the client
-// only displays server-fed values (pet_map_user_a.c). Rule of the house:
-// label every row built on it "(est.)". Fighting Power stays petPower below.
+// only displays server-fed values (pet_map_user_a.c).
 
 export type Stat = "hp" | "mp" | "atk" | "pd" | "md";
 export type Stats = Record<Stat, number>;
@@ -185,9 +184,76 @@ export function panelSetOf(eggKind: string): PanelSet {
   return eggKind === "Primary" || eggKind === "Junior" ? "B" : "A";
 }
 
-// icons (est., +-2-3): sun > moon > star, more is better within a tier. The
+// The owner-side bonus a pet grants its character: the five panel numbers
+// of the pet tooltip (with gear) are fIncPropNum[0..4] on the wire
+// (server-sent, doc pet-system.md #7) — estimated here by the fitted
+// panelStats model — the feet accelerators' Speed+ %, and the Garrote /
+// Critical pet spells (kinds 5/6, "Increases Garrote/Critical rate $$_a":
+// the rank's own effect x100 = %) land on the owner's Garrote/Critical
+// rates.  Shared by usePetStats (the bonus rows + FP) and usePlayerStats.
+export type OwnerBonus = {
+  hp: number;
+  mp: number;
+  atk: number;
+  pd: number;
+  md: number;
+  speedPct: number;
+  // the assigned pet spells' owner bonuses, keyed by spell kind:
+  // value = the ranks' effects x 100 (%) — kinds 5/6 fold into the
+  // Garrote/Critical rows, 0/1/2/3 get their own rows in usePlayerStats
+  // (labelled from the spell description; kind 4 Ride Speed is ignored,
+  // 7 Store Up is not a stat)
+  spells: Partial<Record<number, number>>;
+  // no egg range shipped: the panel figures could not be estimated, only
+  // the pet-gear and spell terms are real
+  partial: boolean;
+  // the tooltip-with-gear stats the panel came from (null when partial) —
+  // the Fighting Power input
+  total: Stats | null;
+};
+
+export function petOwnerBonus(
+  level: number,
+  gear: Record<number, PetGearItem>,
+  spells: Record<number, { kind: number; rank: number }>,
+  species: PetSpecies | undefined,
+  spellTable: PetSpell[],
+): OwnerBonus {
+  const items = Object.values(gear);
+  const g = {
+    atk: items.reduce((s, it) => s + (it.atk ?? 0), 0),
+    pd: items.reduce((s, it) => s + (it.pd ?? 0), 0),
+    md: items.reduce((s, it) => s + (it.md ?? 0), 0),
+    speed: items.reduce((s, it) => s + (it.speed ?? 0), 0),
+  };
+  // the spell kinds' $$_a display is effect x 100
+  const pct: Partial<Record<number, number>> = {};
+  for (const { kind, rank } of Object.values(spells)) {
+    if (rank <= 0) continue;
+    const eff = spellTable[kind]?.ranks[rank]?.effect ?? 0;
+    pct[kind] = (pct[kind] ?? 0) + eff * 100;
+  }
+  const spellObj = { spells: pct };
+  // partial = no egg range shipped: the fresh stats (and so the panel)
+  // cannot be estimated — only the gear adds and the spell rates are real
+  const A = petApt(level, species?.apt ?? null);
+  if (!A) {
+    return { hp: 0, mp: 0, atk: g.atk, pd: g.pd, md: g.md, ...spellObj, speedPct: g.speed, partial: true, total: null };
+  }
+  const [cur] = A;
+  const total = petTooltip(level, { life: cur, mana: cur, attack: cur, pd: cur, md: cur }, {
+    gear: { atk: g.atk, pd: g.pd, md: g.md },
+  }).total;
+  const panel = panelStats(total, panelSetOf(species?.eggKind ?? "Other"));
+  return {
+    hp: panel.hp, mp: panel.mp, atk: panel.atk, pd: panel.pd, md: panel.md,
+    ...spellObj, speedPct: g.speed, partial: false, total,
+  };
+}
+
+// icons (+-2-3): sun > moon > star, more is better within a tier. The
 // pet's own stat sum (NO gear) against a level benchmark. The game has one
-// unexplained gear exception (Hydralion #2), so this row is honest (est.).
+// unexplained gear exception (Hydralion #2).
 const ICON_KNOTS: [number, number][] = [
   [0.7216, -8], [1.0055, -3], [1.1955, 3], [1.2974, 8.5], [1.3247, 12],
   [1.4027, 15], [1.4796, 17.5], [1.5067, 19],

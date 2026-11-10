@@ -64,8 +64,9 @@ export type DarksteelTier = "fine" | "well" | "perfect";
 export type DarksteelKey = "dmg" | "pd" | "md";
 
 // One config per equipped item. enhance/rank are the 0-30 strips in the drawer.
-// attrs/elements are the toggled-on potential attributes / five elements - a
-// reference choice only (values aren't stored, so nothing sums them yet).
+// attrs/elements are the toggled-on potential attributes / five elements;
+// usePlayerStats folds them into the rows (elements: the record's own value x
+// the active set multiplier; attributes: the game's percentages in attrData).
 export type EquipEntry = {
   item: Item;
   enhance: number;

@@ -158,3 +158,67 @@ export function loadTalents(): Promise<Record<string, ClassTalents>> {
   }
   return cache;
 }
+
+// The character-wide passive stat lines of the learned talents.  Every one
+// carries the "Passive:" marker ("Passive: Increases your defense by 1%")
+// while the texts that change single spells name spells and never do — so
+// the marker is the exact discriminator between "moves a stat row" and
+// "belongs to the Skills tab" (spellAffects).  Each learned rank's own text
+// (the same intro the tooltip shows).  The Critical/Garrote DAMAGE-bonus
+// passives ("Lethality", "Disabling Hit") and "block chance" change no
+// stat row on the panel, so they are not tracked here.
+// Returns the % / point sums of the learned ranks plus the per-talent
+// list (PlayerStats shows what each learned talent contributes).  The
+// per-rank intros are cumulative: rank N's text holds the full N-rank
+// value, so the LEARNED rank's text holds the whole contribution.
+export type PassiveStats = {
+  hpPct: number;
+  atkPct: number;
+  defPct: number;
+  dodge: number;
+  garrote: number;
+  crit: number;
+  parry: number;
+  // no stat row exists for these three — the rows only appear when a
+  // talent grants them (usePlayerStats)
+  critDmg: number;
+  garroteDmg: number;
+  block: number;
+};
+
+const PASSIVE_RES: [keyof PassiveStats, RegExp][] = [
+  ["hpPct", /health by ([\d.]+)%/i],
+  ["atkPct", /attack power by ([\d.]+)%/i],
+  ["defPct", /defense by ([\d.]+)%/i],
+  ["dodge", /dodge (?:chance )?by ([\d.]+)%/i],
+  ["garrote", /garrote chance by ([\d.]+)%/i],
+  ["crit", /critical(?: strike)? chance by ([\d.]+)%/i],
+  ["parry", /parry chance by ([\d.]+)%/i],
+  ["critDmg", /critical(?: strike)? damage bonus by ([\d.]+)%/i],
+  ["critDmg", /damage dealt by your critical hit by ([\d.]+)%/i],
+  ["garroteDmg", /garrote damage bonus by ([\d.]+)%/i],
+  ["block", /block chance by ([\d.]+)%/i],
+];
+
+export function passiveStats(
+  trees: ClassTalents | undefined,
+  ranks: Record<number, number>,
+): PassiveStats {
+  const sums: PassiveStats = {
+    hpPct: 0, atkPct: 0, defPct: 0, dodge: 0, garrote: 0, crit: 0, parry: 0,
+    critDmg: 0, garroteDmg: 0, block: 0,
+  };
+  for (const tree of trees ?? []) {
+    for (const node of tree.nodes) {
+      const rank = ranks[node.id] ?? 0;
+      if (rank <= 0) continue;
+      const text = (node.intros[Math.min(rank, node.intros.length) - 1] ?? "").trim();
+      if (!/^Passive:/i.test(text)) continue;
+      for (const [key, re] of PASSIVE_RES) {
+        const m = re.exec(text);
+        if (m) sums[key] += Number(m[1]);
+      }
+    }
+  }
+  return sums;
+}

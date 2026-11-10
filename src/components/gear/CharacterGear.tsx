@@ -46,13 +46,13 @@ const TITLES_OPTIONS = [{ name: "None", effect: "" }, ...TITLES];
 // zu-re/evidence/pet_tooltip.txt): name, Fighting Power, level, the five
 // "+X" stats, aptitudes, assigned spell ranks and the four gear names.
 // Uses the .item-tip card (same background/border corner/white text as the
-// gear tooltip). All rows are (est.): the doc-fitted model of
-// docs/pet-stat-calculations.md builds the tooltip (fresh formula + Pet
-// Bolus roll + gear), the game's own petPower builds Fighting Power, and
-// the sun/moon/star row is the icon estimate (own stats, no gear).
+// gear tooltip). The doc-fitted model of docs/pet-stat-calculations.md
+// builds the tooltip (fresh formula + Pet Bolus roll + gear), the game's
+// own petPower builds Fighting Power, and the sun/moon/star row is the icon
+// estimate (own stats, no gear; the real aptitude roll is server-side).
 function PetTip({ pets, pet }: { pets: NonNullable<ReturnType<typeof usePets>>; pet: NonNullable<PetBuild> }) {
   const species = pets.species.find((s) => s.id === pet.speciesId);
-  // the egg-range midpoints stand in for the server's aptitude roll (est.)
+  // the egg-range midpoints stand in for the server's aptitude roll
   const A = petApt(pet.level, species?.apt ?? null);
   const cur = A?.[0] ?? 0;
   const apt: Aptitudes = { life: cur, mana: cur, attack: cur, pd: cur, md: cur };
