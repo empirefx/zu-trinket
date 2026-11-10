@@ -6,6 +6,8 @@ import { CategoryPanel } from "../components/ui/CategoryPanel";
 import { CursorReadout } from "../components/ui/CursorReadout";
 import { SavedPanel } from "../components/ui/SavedPanel";
 import { useMapState } from "../hooks/useMapState";
+import { useState } from "react";
+import { Button } from "@heroui/react";
 
 interface MapPageProps {
   data: Data;
@@ -15,6 +17,7 @@ interface MapPageProps {
 }
 
 export function MapPage({ data, slug, setSlug, isActive }: MapPageProps) {
+  const [panelOpen, setPanelOpen] = useState(false);
   const {
     meta,
     mapPoints,
@@ -71,7 +74,8 @@ export function MapPage({ data, slug, setSlug, isActive }: MapPageProps) {
         )}
       </div>
 
-      <SidePanel
+      <div className={`${panelOpen ? "block" : "hidden"} md:block`}>
+        <SidePanel
         data={data}
         slug={slug}
         onMapSelect={setSlug}
@@ -90,6 +94,14 @@ export function MapPage({ data, slug, setSlug, isActive }: MapPageProps) {
           onToggle={toggleCategory}
         />
       </SidePanel>
+      </div>
+      <Button
+        className="md:hidden absolute top-4 right-3 z-50"
+        size="sm"
+        onPress={() => setPanelOpen((v) => !v)}
+      >
+        {"☰"}
+      </Button>
       <SavedPanel
         data={data}
         meta={meta}

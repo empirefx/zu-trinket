@@ -24,7 +24,7 @@ export function SavedPanel({ data, meta, points, saved, viewport, onClick }: Sav
       data-testid="saved-panel"
     >
       <Card className="w-full bg-default/90 backdrop-blur-sm border border-divider rounded-sm">
-        <CardContent className="p-1.5 space-y-1">
+        <CardContent className="p-0 md:p-1.5 space-y-0.5 md:space-y-1">
           {meta && (
             // the current map as a static thumbnail, pinned points as dots —
             // the box matches the transform's pixel box (the overlay's real
