@@ -1,5 +1,5 @@
 import { useState, type Key, type ReactNode } from "react";
-import { Button, Description, Input, Label, ListBox, Modal, Select } from "@heroui/react";
+import { Button, Chip, Description, Input, Label, ListBox, Modal, Select } from "@heroui/react";
 import { GearColumn } from "./GearColumn";
 import { GearViewer } from "./GearViewer";
 import { GearSlot } from "./GearSlot";
@@ -145,27 +145,28 @@ export function CharacterGear() {
             type="number"
             aria-label="Level"
             variant="secondary"
-            className="w-14"
+            className="w-12"
             value={level}
             onChange={(e) => setLevel(Math.max(0, Math.min(200, parseInt(e.target.value) || 0)))}
           />
         </div>
         <div className="field">
           <span>Title</span>
-          <Button
-            type="button"
-            className="title-button cursor-pointer"
-            onPress={() => setTitleModalOpen(true)}
+          <Chip
+            role="button"
+            tabIndex={0}
+            className="w-38 max-w-[180px] title-button cursor-pointer text-foreground"
+            onClick={() => setTitleModalOpen(true)}
           >
-            {title}
-          </Button>
+            <span className="block truncate">{title}</span>
+          </Chip>
         </div>
         <div className="field">
           <span>Class</span>
           <Select
             aria-label="Class"
             variant="secondary"
-            className="w-44"
+            className="w-33"
             placeholder="Class"
             value={classId}
             onChange={(v: Key | Key[] | null) => setClassId(String(v) as ClassId)}
