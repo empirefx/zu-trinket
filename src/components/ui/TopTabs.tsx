@@ -18,7 +18,7 @@ export function TopTabs({ activeKey, onChange }: TopTabsProps) {
         className="flex h-8 items-center justify-center px-2 text-foreground/50 select-none"
         aria-label="Logo"
       >
-        <img src={logo} alt="" className="h-6 w-auto filter invert" />
+        <img src={logo} alt="" className="h-6 w-auto" />
       </div>
       <div
         className={`flex h-8 items-center gap-2 px-3 text-sm font-medium rounded transition-colors cursor-pointer select-none ${
