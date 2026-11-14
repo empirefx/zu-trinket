@@ -44,6 +44,7 @@ export function RefineRankPanel() {
             aria-label="Goal"
             variant="secondary"
             value={goalDraft ?? rankGoal}
+            disabled={rank >= maxRank}
             onChange={(e) => setGoalDraft(e.target.value)}
             onBlur={commitGoal}
             onKeyDown={(e) => { if (e.key === "Enter") commitGoal(); }}

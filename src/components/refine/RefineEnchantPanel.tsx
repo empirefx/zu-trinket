@@ -54,6 +54,7 @@ export function RefineEnchantPanel() {
             aria-label="Enchant goal"
             variant="secondary"
             value={goalDraft ?? enhGoal}
+            disabled={enh >= enhMax}
             onChange={(e) => setGoalDraft(e.target.value)}
             onBlur={commitGoal}
             onKeyDown={(e) => { if (e.key === "Enter") commitGoal(); }}
