@@ -1,7 +1,7 @@
 ![webtool picture](src/assets/background-image.png)
 # Zu Online Map & Build Planner
 
-A web tool for the MMORPG **Zu Online**. Two tabs:
+A web tool for the MMORPG **Zu Online**. Three tabs:
 
 - **Map** — a full-screen interactive overworld map (React + Leaflet) showing
   mob spawns, objects and NPCs for every map, with a map switcher, per-category
@@ -13,10 +13,18 @@ A web tool for the MMORPG **Zu Online**. Two tabs:
   (upgrade ranks, enhance stars, five elements, potential attributes, set
   bonuses), class stat curves, pets (stats, gear, spells), the class talent
   trees and the class skill list, plus named builds saved in localStorage.
+- **Refine** — a rank + enchant planner for any piece the build carries:
+  pick the gear, then plan **Rank** attempts (per grade band, with the game's
+  gold cost, success rate and required materials) or **Enchant** attempts
+  (success from the item's STAR group, spar materials by gear level), with a
+  live attempt log, session totals and saved favorite sessions.
 
 ## To-do, missing, server side, etc.
 
-- [ ] Refines page
+- [x] ~~Refine page~~
+
+**Refine**
+ - [ ] Display calculations for materials that can be bought through npc vendor
 
 **Map**
  - [ ] Brigand and Treasure chests categories
