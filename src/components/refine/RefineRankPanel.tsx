@@ -8,7 +8,7 @@ import { useRefineSim } from "./RefineSim";
 
 export function RefineRankPanel() {
   const sim = useRefineSim();
-  const { entry, rank, rankGoal, maxRank, gradeCost, gradeMats, rankRate } = sim;
+  const { entry, rank, enh, rankGoal, maxRank, gradeCost, gradeMats, rankRate } = sim;
 
   // the goal field keeps the keystrokes locally and commits on blur/Enter,
   // so typing "12" is not clamped to current+1 after the first digit
@@ -24,7 +24,7 @@ export function RefineRankPanel() {
         <GearSlotBox
           icon={entry.item.icon}
           label={`Rank ${rank}`}
-          tip={<GearTooltip entry={entry} />}
+          tip={<GearTooltip entry={{ ...entry, rank, enhance: enh }} />}
           badge={RANK_LOCKS.includes(rank) ? "locked" : undefined}
         />
         <div className="r-mat-slots" aria-label="Materials per attempt">

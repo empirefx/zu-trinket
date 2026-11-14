@@ -9,7 +9,7 @@ import { useRefineSim } from "./RefineSim";
 
 export function RefineEnchantPanel() {
   const sim = useRefineSim();
-  const { entry, enh, enhGoal, spar, sparKind, stones, enhRate, hasEnchant, enhMax } = sim;
+  const { entry, rank, enh, enhGoal, spar, sparKind, stones, enhRate, hasEnchant, enhMax } = sim;
 
   // the goal field keeps the keystrokes locally and commits on blur/Enter
   const [goalDraft, setGoalDraft] = useState<string | null>(null);
@@ -24,7 +24,7 @@ export function RefineEnchantPanel() {
         <GearSlotBox
           icon={entry.item.icon}
           label={`Enchant ${enh}`}
-          tip={<GearTooltip entry={entry} />}
+          tip={<GearTooltip entry={{ ...entry, rank, enhance: enh }} />}
           badge={ENH_LOCKS.includes(enh) ? "locked" : undefined}
         />
         <div className={`r-slot ${spar ? "" : "off"}`} tabIndex={spar ? 0 : undefined}>
