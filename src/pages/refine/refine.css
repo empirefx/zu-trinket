@@ -183,6 +183,15 @@
 .r-work-head strong { font-size: 18px; display: block; color: #ff9933; }
 /* the piece's rank/enchant state: plain grey text, bigger than the meta */
 .r-state { font-size: 16px; color: #8b93a3; }
+/* maxed out: the big grey line that replaces probability + cost */
+.r-maxed {
+  margin: 0;
+  padding: 26px 0;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  color: #8b93a3;
+}
 .r-meta { color: #8b93a3; font-size: 12px; }
 
 .r-seg {

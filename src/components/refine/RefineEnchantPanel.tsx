@@ -9,7 +9,7 @@ import { useRefineSim } from "./RefineSim";
 
 export function RefineEnchantPanel() {
   const sim = useRefineSim();
-  const { entry, enh, enhGoal, spar, sparKind, stones, enhRate, hasEnchant } = sim;
+  const { entry, enh, enhGoal, spar, sparKind, stones, enhRate, hasEnchant, enhMax } = sim;
 
   // the goal field keeps the keystrokes locally and commits on blur/Enter
   const [goalDraft, setGoalDraft] = useState<string | null>(null);
@@ -61,9 +61,13 @@ export function RefineEnchantPanel() {
         </label>
       </div>
       {hasEnchant ? (
-        <p className="r-prob" style={{ color: probColor(enhRate ?? 0) }}>
-          Probability {enhRate === null ? "—" : `${enhRate}%`}
-        </p>
+        enh >= enhMax ? (
+          <p className="r-maxed">Enchant is maxed out</p>
+        ) : (
+          <p className="r-prob" style={{ color: probColor(enhRate ?? 0) }}>
+            Probability {enhRate === null ? "—" : `${enhRate}%`}
+          </p>
+        )
       ) : (
         <p className="r-note">This item has no enchant curve (no STAR group).</p>
       )}

@@ -50,13 +50,19 @@ export function RefineRankPanel() {
           />
         </label>
       </div>
-      <p className="r-prob" style={{ color: probColor(rankRate) }}>
-        Probability {rankRate}%
-      </p>
-      <div className="r-costrow">
-        <span className="r-muted">Cost per attempt</span>
-        <Chip size="lg" variant="soft">{num(gradeCost)} Bones</Chip>
-      </div>
+      {rank >= maxRank ? (
+        <p className="r-maxed">Gear is maxed out</p>
+      ) : (
+        <>
+          <p className="r-prob" style={{ color: probColor(rankRate) }}>
+            Probability {rankRate}%
+          </p>
+          <div className="r-costrow">
+            <span className="r-muted">Cost per attempt</span>
+            <Chip size="lg" variant="soft">{num(gradeCost)} Bones</Chip>
+          </div>
+        </>
+      )}
       <div className="r-checks">
         <label className="r-check">
           <input type="checkbox" checked={sim.auto} disabled={sim.rank >= maxRank} onChange={(e) => sim.setAuto(e.target.checked)} />
