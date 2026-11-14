@@ -21,9 +21,8 @@ A web tool for the MMORPG **Zu Online**. Three tabs:
 
 ## To-do, missing, server side, etc.
 
-- [x] ~~Refine page~~
-
 **Refine**
+- [x] ~~Refine page~~
  - [ ] Display calculations for materials that can be bought through npc vendor
 
 **Map**
