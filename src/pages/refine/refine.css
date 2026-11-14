@@ -1,0 +1,475 @@
+/* Refine tab — the gear page's palette adapted to refine-skeleton.html's
+   layout: workbench | total spent, the attempt log full width below. */
+
+.refine-page {
+  margin: 0;
+  background: #111;
+  color: var(--foreground);
+  font: 14px system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+.refine-page .r-head {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* the select + its label sit in the header's middle slot, centred; Builds
+   stays on the right */
+.refine-page .r-head .r-sel-wrap {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.r-sel-label {
+  color: #8b93a3;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.refine-page .r-head .r-gear-select {
+  width: auto;
+  max-width: 380px;
+  min-width: 220px;
+}
+.refine-page .r-head .r-gear-select .select__trigger {
+  background: var(--surface-secondary);
+  border: 0;
+  border-radius: 9999px;
+  min-height: 36px;
+  gap: 8px;
+  padding-inline: 8px 30px;
+}
+.r-sel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.r-sel .r-gicon { --zs: 0.75; }
+.r-sel-name {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.r-sel-ph { color: var(--muted); }
+
+/* the sprite-cell icon box (same look as the gear page's .gear-icon;
+   unscoped so the Select/Dropdown portals get it too) */
+.r-gicon {
+  display: inline-block;
+  flex: none;
+  width: calc(var(--zs, 1) * 32px);
+  height: calc(var(--zs, 1) * 32px);
+  background-color: #11131a;
+  border: 1px solid #3a4150;
+  border-radius: 3px;
+  color: #5a6172;
+  font-size: 14px;
+  line-height: 30px;
+  text-align: center;
+}
+
+/* ---- the four areas (one column on mobile) ---- */
+.r-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+}
+.r-work { order: 1; }
+.r-sum { order: 2; }
+.r-log { order: 3; }
+.r-fav { order: 4; }
+@media (min-width: 1100px) {
+  .r-grid {
+    grid-template-columns: minmax(240px, 300px) minmax(0, 1fr) minmax(300px, 380px);
+    grid-template-areas: "fav work sum" "log log log";
+    align-items: start;
+  }
+  .r-fav { grid-area: fav; order: 0; }
+  .r-work { grid-area: work; }
+  .r-sum { grid-area: sum; }
+  .r-log { grid-area: log; }
+}
+
+/* ---- favorites ---- */
+/* the favorites card: all saved sessions' gear listed as a HeroUI ListBox;
+   the empty state is one centred line inviting a save */
+.r-fav-empty {
+  margin: 0;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+/* all saves listed, scrollable; compact rows that tint on hover */
+.r-favs {
+  gap: 8px;
+  max-height: 500px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.r-favs .r-fav-row {
+  padding: 6px 10px;
+  gap: 10px;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  background: var(--surface-secondary);
+  cursor: pointer;
+}
+.r-favs .r-fav-row:hover { background: rgba(232, 195, 106, 0.1); }
+.r-fav-text { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.r-fav-text strong { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.r-fav-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.r-fav-text .r-muted { font-size: 12px; }
+.r-fav-x {
+  border: 0;
+  background: none;
+  color: #8b93a3;
+  font: inherit;
+  flex: none;
+  align-self: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 8px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 9;
+}
+.r-fav-x:hover { color: #ff5c5c; background: rgba(255, 92, 92, 0.1); }
+/* the save button: the gear page's gold accent */
+.refine-page .r-fav-toggle {
+  border-radius: 9999px;
+  white-space: nowrap;
+  background: transparent;
+  border: 1px solid #e8c36a;
+  color: #e8c36a;
+}
+.refine-page .r-fav-toggle:hover {
+  background: #e8c36a;
+  color: #1e222b;
+}
+
+/* the empty shell (the gate's layout behind no gear) */
+.r-empty-note {
+  margin: 0;
+  padding: 64px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ---- workbench ---- */
+.r-work-body { display: grid; gap: 16px; }
+
+.r-work-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.r-work-head .r-big { --zs: 1.5; }
+.r-grow { flex: 1; min-width: 160px; }
+.r-work-head strong { font-size: 18px; display: block; color: #ff9933; }
+/* the piece's rank/enchant state: plain grey text, bigger than the meta */
+.r-state { font-size: 16px; color: #8b93a3; }
+.r-meta { color: #8b93a3; font-size: 12px; }
+
+.r-seg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.r-seg button {
+  height: 44px;
+  font: inherit;
+  font-size: 15px;
+  border: 1px solid #3a4150;
+  border-radius: 10px;
+  background: transparent;
+  color: #dfe3ea;
+  cursor: pointer;
+}
+.r-seg button.on {
+  background: #e8c36a;
+  border-color: #e8c36a;
+  color: #1e222b;
+  font-weight: 600;
+}
+
+.r-panel { display: grid; gap: 14px; }
+
+/* the gear | preview slots (the skeleton's Rank/Enchant slot row); the
+   enchant panel adds the spar in the middle */
+.r-slots {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+.r-slots .r-slot { flex: none; }
+.r-slots--2 .r-slot { min-width: 96px; }
+
+.r-slot {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 6px;
+  min-height: 92px;
+  min-width: 92px;
+  padding: 10px 6px;
+  background: var(--surface-secondary);
+  border-radius: 12px;
+  text-align: center;
+  font-size: 11px;
+}
+.r-slot .r-slot-icon { --zs: 1.5; }
+.r-slot.off { opacity: 0.4; }
+.r-ranknum { font-size: 20px; font-weight: 700; color: #e8c36a; }
+.r-muted { color: #8b93a3; }
+
+/* the gear tooltip opens to the RIGHT of the slot, vertically centred —
+   the gear page's sideways tooltip anchor, mirrored; the item-tip inside
+   sizes itself (the extra class beats the base .r-tip anchor below) */
+.r-slots .r-gear-tip {
+  bottom: auto;
+  top: 50%;
+  transform: translate(0, -50%);
+  left: calc(100% + 8px);
+  max-width: 380px;
+  white-space: normal;
+}
+
+/* the item-card tooltip carries its own dark card - the wrapper box goes
+   (the gear page strips it the same way for .hover-tip:has(.item-tip)) */
+.r-tip:has(.item-tip) {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  max-width: none;
+}
+
+.r-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.r-numfield {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+  color: #8b93a3;
+}
+
+.r-prob {
+  margin: 0;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.r-costrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* the slots row's centre: the required materials as icon slots with a
+   md-size count badge */
+.r-mat-slots {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.r-icon-badge-wrap {
+  position: relative;
+  display: inline-block;
+}
+.r-mat-badge {
+  position: absolute;
+  right: -8px;
+  bottom: -6px;
+  min-width: 22px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #e8c36a;
+  color: #1e222b;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* the shared hover tooltip (name + description), the gear page's .hover-tip */
+.r-tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: max-content;
+  max-width: 260px;
+  padding: 6px 8px;
+  background: #1e222b;
+  border: 1px solid #3a4150;
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  color: #dfe3ea;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  white-space: normal;
+  user-select: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.r-tip b { color: #e8c36a; }
+.r-tip .r-tip-body { display: block; margin-top: 2px; color: #cbd2de; }
+.r-slot:hover .r-tip,
+.r-slot:focus .r-tip,
+.r-slot:focus-visible .r-tip {
+  opacity: 1;
+  visibility: visible;
+}
+.r-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+}
+.r-check input { width: 18px; height: 18px; accent-color: #e8c36a; }
+/* maxed out: the checkboxes grey out with the label */
+.r-check:has(input:disabled) {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.r-check:has(input:disabled) input { cursor: not-allowed; }
+.r-checks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.r-actions { display: flex; justify-content: center; }
+.r-actions button { min-width: 220px; }
+/* the gear page's gold primary button */
+.refine-page .r-actions button {
+  background: #e8c36a;
+  border-color: #e8c36a;
+  color: #1e222b;
+  font-weight: 600;
+}
+.refine-page .r-actions button:disabled { opacity: 0.4; }
+
+.r-note { margin: 0; color: #d08b6a; font-size: 13px; text-align: center; }
+
+/* ---- total spent ---- */
+.r-sum-body { display: grid; gap: 14px; }
+.r-total { margin: 0; font-size: 30px; font-weight: 700; line-height: 1.1; }
+.r-total .r-muted { font-size: 14px; font-weight: 400; }
+.r-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.r-box {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--surface-secondary);
+}
+.r-box small { display: block; color: #8b93a3; }
+.r-box strong { font-size: 18px; }
+.r-ok { color: #4ecb4e; }
+.r-bad { color: #ff5c5c; }
+
+.r-used {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  max-height: 230px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.r-used li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid #23262e;
+}
+.r-used li:last-child { border: 0; }
+.r-used .r-gicon { --zs: 0.8; }
+.r-grow { flex: 1; min-width: 0; }
+/* the empty line sits centred */
+.r-used li.r-muted {
+  justify-content: center;
+  border-bottom: 0;
+  padding: 10px 0;
+}
+
+/* ---- attempts log (HeroUI table; the totals boxes stay custom) ---- */
+.r-log-body { display: grid; gap: 14px; }
+.r-log-table { font-size: 13px; }
+.r-log-mats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: center;
+}
+.r-log-mat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.r-log-mat .r-gicon { --zs: 0.6; }
+/* the pager: summary left, the HeroUI page links right */
+.r-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.r-pager-sum { font-size: 16px; white-space: nowrap; order: 2}
+.r-totals {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+.r-totals .r-box {
+  border: 2px solid #504c3a26;
+  background: linear-gradient(180deg, rgba(232, 195, 106, 0.05), transparent 100%);
+}
+.r-totals .r-box strong { font-variant-numeric: tabular-nums; }
+/* the materials total carries the icons inline */
+.r-tot-mats {
+  margin-top: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #dfe3ea;
+}

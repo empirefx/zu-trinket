@@ -3,9 +3,10 @@ import { Spinner } from "@heroui/react";
 import { useData } from "./hooks/useData";
 import { MapPage } from "./pages/MapPage";
 import { GearPage } from "./pages/gear/GearPage";
+import { RefinePage } from "./pages/refine/RefinePage";
 import { TopTabs } from "./components/ui/TopTabs";
 
-type TabKey = "map" | "gear";
+type TabKey = "map" | "gear" | "refine";
 
 export default function App() {
   const { data, err } = useData();
@@ -40,6 +41,7 @@ export default function App() {
       <TopTabs activeKey={activeTab} onChange={handleTabChange} />
       {activeTab === "map" && <MapPage data={data} slug={slug} setSlug={setSlug} isActive={true} />}
       {activeTab === "gear" && <GearPage />}
+      {activeTab === "refine" && <RefinePage />}
     </div>
   );
 }
