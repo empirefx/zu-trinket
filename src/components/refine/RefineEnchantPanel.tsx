@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button, Input } from "@heroui/react";
 import { GearTooltip } from "../gear/GearTooltip";
 import { refineIconClass } from "../../lib/icons";
-import { GearSlotBox, probColor } from "./refineBits";
+import { ENH_LOCKS, GearSlotBox, probColor } from "./refineBits";
 import { useRefineSim } from "./RefineSim";
 
 export function RefineEnchantPanel() {
@@ -21,7 +21,12 @@ export function RefineEnchantPanel() {
   return (
     <div className="r-panel" data-testid="enchant-panel">
       <div className="r-slots">
-        <GearSlotBox icon={entry.item.icon} label={`Enchant ${enh}`} tip={<GearTooltip entry={entry} />} />
+        <GearSlotBox
+          icon={entry.item.icon}
+          label={`Enchant ${enh}`}
+          tip={<GearTooltip entry={entry} />}
+          badge={ENH_LOCKS.includes(enh) ? "locked" : undefined}
+        />
         <div className={`r-slot ${spar ? "" : "off"}`} tabIndex={spar ? 0 : undefined}>
           <span className="r-icon-badge-wrap">
             <span className={`r-gicon zs r-slot-icon ${spar ? refineIconClass(spar.icon) ?? "" : ""}`}>{spar ? "" : "◆"}</span>
@@ -39,6 +44,7 @@ export function RefineEnchantPanel() {
           icon={entry.item.icon}
           label={`Enchant ${enhGoal}`}
           tip={<GearTooltip entry={{ ...entry, enhance: enhGoal }} />}
+          badge={ENH_LOCKS.includes(enhGoal) ? "safe" : undefined}
         />
       </div>
       <div className="r-two">

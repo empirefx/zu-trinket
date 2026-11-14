@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import type { EquipEntry } from "../../lib/items";
 import { saveFav, type FavAttempt } from "../../lib/refineFavs";
 import { ENCHANT_RATE, SPARS, UPGRADES } from "../gear/generated/refineTable";
-import { AUTO_CAP, sparKindOf, type LoadReq } from "./refineBits";
+import { AUTO_CAP, lockFloor, sparKindOf, ENH_LOCKS, RANK_LOCKS, type LoadReq } from "./refineBits";
 
 interface RefineSim {
   entry: EquipEntry;
@@ -134,22 +134,23 @@ export function RefineSimProvider({
           kind: "rank",
           ok,
           from: r,
-          to: ok ? r + 1 : r,
+          to: ok ? r + 1 : lockFloor(r, RANK_LOCKS),
           gold: g.cost,
           mats: g.mats.map((x) => ({ name: x.name, count: x.count, icon: x.icon })),
         });
-        r = ok ? r + 1 : r;
+        r = ok ? r + 1 : lockFloor(r, RANK_LOCKS);
       } else {
         if (!spar || !hasEnchant || enhRate === null || e >= enhGoal || e >= enhMax) break;
-        const ok = Math.random() * 100 < enhRate;        log.push({
+        const ok = Math.random() * 100 < enhRate;
+        log.push({
           kind: "enchant",
           ok,
           from: e,
-          to: ok ? e + 1 : Math.max(0, e - 1),
+          to: ok ? e + 1 : lockFloor(e, ENH_LOCKS),
           gold: 0,
           mats: [{ name: spar.name, count: stones, icon: spar.icon }],
         });
-        e = ok ? e + 1 : Math.max(0, e - 1);
+        e = ok ? e + 1 : lockFloor(e, ENH_LOCKS);
       }
     } while (auto && guard < AUTO_CAP);
     setRank(r);

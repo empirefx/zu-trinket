@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button, Chip, Input } from "@heroui/react";
 import { GearTooltip } from "../gear/GearTooltip";
-import { GearSlotBox, MatSlot, num, probColor } from "./refineBits";
+import { GearSlotBox, MatSlot, num, probColor, RANK_LOCKS } from "./refineBits";
 import { useRefineSim } from "./RefineSim";
 
 export function RefineRankPanel() {
@@ -21,7 +21,12 @@ export function RefineRankPanel() {
   return (
     <div className="r-panel" data-testid="rank-panel">
       <div className="r-slots">
-        <GearSlotBox icon={entry.item.icon} label={`Rank ${rank}`} tip={<GearTooltip entry={entry} />} />
+        <GearSlotBox
+          icon={entry.item.icon}
+          label={`Rank ${rank}`}
+          tip={<GearTooltip entry={entry} />}
+          badge={RANK_LOCKS.includes(rank) ? "locked" : undefined}
+        />
         <div className="r-mat-slots" aria-label="Materials per attempt">
           {gradeMats.map((m, i) => <MatSlot key={i} mat={m} />)}
         </div>
@@ -29,6 +34,7 @@ export function RefineRankPanel() {
           icon={entry.item.icon}
           label={`Rank ${rankGoal}`}
           tip={<GearTooltip entry={{ ...entry, rank: rankGoal }} />}
+          badge={RANK_LOCKS.includes(rankGoal) ? "safe" : undefined}
         />
       </div>
       <div className="r-two">
