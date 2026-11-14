@@ -113,8 +113,9 @@ export function RefineSimProvider({
 
   const grade = grades[Math.min(9, Math.floor(rank / 3))];
   const rateRow = curve?.[Math.min(enh, curve.length - 1)];
+  const rateUsable = Boolean(rateRow && rateRow[0] !== null && rateRow[1] !== null);
   const enhRate =
-    rateRow && stones > 0 ? Math.min(100, (rateRow[0] + rateRow[1] * stones) / 100) : null;
+    rateUsable && stones > 0 ? Math.min(100, ((rateRow as [number, number])[0] + (rateRow as [number, number])[1] * stones) / 100) : null;
   // a full party helps the refine: +8 to the success percentage
   const rankRate = Math.min(100, grade.rate + (party ? 8 : 0));
 
@@ -140,8 +141,7 @@ export function RefineSimProvider({
         r = ok ? r + 1 : r;
       } else {
         if (!spar || !hasEnchant || enhRate === null || e >= enhGoal || e >= enhMax) break;
-        const ok = Math.random() * 100 < enhRate;
-        log.push({
+        const ok = Math.random() * 100 < enhRate;        log.push({
           kind: "enchant",
           ok,
           from: e,

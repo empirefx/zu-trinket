@@ -21,7 +21,7 @@ export function RefineWorkbench() {
           <span className={`r-gicon zs r-big ${iconClass(entry.item.icon) ?? ""}`} aria-hidden="true" />
           <div className="r-grow">
             <strong>{entry.item.name}</strong>
-            <div className="r-state">Rank {rank} · Enchant +{enh}</div>
+            <div className="r-state">Rank {rank} · Enchant {enh}</div>
             <span className="r-meta">{pretty(sel)} · gear level {entry.item.tier}</span>
           </div>
           <Button
